@@ -1,0 +1,8 @@
+name: UltimaHats
+version: 1.0.0
+main: com.leomelonseeds.ultimahats.UltimaHats
+api-version: 1.19
+author: M310N
+description: A feature-rich Hats cosmetic Spigot plugin.
+depend:
+  - Vault

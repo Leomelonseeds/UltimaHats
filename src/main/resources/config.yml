@@ -1,0 +1,31 @@
+mainGUI:
+  # Size of the GUI - must be a multiple of 9.
+  size: 27
+  # Fill the unused slots in the GUI with an item
+  fill:
+    enabled: true
+    item: BLUE_STAINED_GLASS_PANE
+    name: ""
+    # The starting and ending slots; all items in between (inclusive)
+    # will be filled with the specified item.
+    start: 0
+    end: 26 
+  # The first three "heads", "banners", and "blocks" items are required
+  #
+  # New items can be added as required. They can execute commands, using 
+  # variable %player% if needed.
+  #
+  # Slots are 0 indexed - the first slot in the GUI is 0.
+  items:
+    heads:
+      item: PLAYER_HEAD
+      name: "&fPlayer Heads"
+      slot: 11
+    banners:
+      item: WHITE_BANNER
+      name: "&fBanners"
+      slot: 13
+    blocks:
+      item: STONE
+      name: "&fBlocks"
+      slot: 15
