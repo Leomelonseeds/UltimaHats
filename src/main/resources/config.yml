@@ -1,3 +1,17 @@
+# If set to false, the plugin will not allow players to wear a hat if they already have a helmet
+# If set to true, hats will be automatically applied, and helmets will be automatically removed
+force-remove-helmets: false
+
+# Accepts "MySQL" or "SQL"
+storage-method: SQL
+mysql-options:
+  host:
+  port:
+  user:
+  password:
+  database:
+  prefix:
+
 mainGUI:
   # Size of the GUI - must be a multiple of 9.
   size: 27
