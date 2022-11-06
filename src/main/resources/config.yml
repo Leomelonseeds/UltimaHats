@@ -37,3 +37,24 @@ mainGUI:
     slot: 31
     commands:
       - "bossshop open cosmetics %player%"
+      
+# Messages sent by plugin to player
+strings:
+  prefix: "&b&lHats &8&l» &7"
+  hat-selected: "You are now wearing the %hat% &7hat"
+  requirements-not-met: "&cYou don't meet the requirements to use this hat!"
+  not-enough-money: "&cYou don't have enough money for this purchase!"
+  hat-purchased: "You bought %hat% &7for &a%cost%&7!"
+  
+# Lore added to the end of hats to indicate locked status
+lore:
+  locked:
+    - ""
+    - "&cLocked"
+  unlocked:
+    - ""
+    - "&eClick to select!"
+  selected:
+    - ""
+    - "&aSelected!"
+ 
