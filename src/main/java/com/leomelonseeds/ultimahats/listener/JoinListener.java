@@ -38,21 +38,20 @@ public class JoinListener implements Listener {
         
         // Check player's owned hats and remove those that don't exist
         // to save on storage space and improve tidyness
-        plugin.getSQL().getOwnedHats(player.getUniqueId(), result -> {
-            if (result == null) {
-                return;
+        String result = plugin.getSQL().getOwnedHats(player.getUniqueId());
+        if (result == null) {
+            return;
+        }
+        String hats = result;
+        List<String> owned = Arrays.asList(hats.split(","));
+        Set<String> available = ConfigUtils.getConfigFile("hats.yml").getKeys(false);
+        for (String s : new ArrayList<>(owned)) {
+            if (!available.contains(s)) {
+                owned.remove(s);
             }
-            String hats = (String) result;
-            List<String> owned = Arrays.asList(hats.split(","));
-            Set<String> available = ConfigUtils.getConfigFile("hats.yml").getKeys(false);
-            for (String s : new ArrayList<>(owned)) {
-                if (!available.contains(s)) {
-                    owned.remove(s);
-                }
-            }
-            String cleaned = String.join(",", owned);
-            plugin.getSQL().saveOwnedHats(player.getUniqueId(), cleaned);
-        });
+        }
+        String cleaned = String.join(",", owned);
+        plugin.getSQL().saveOwnedHats(player.getUniqueId(), cleaned);
     }
     
     @EventHandler

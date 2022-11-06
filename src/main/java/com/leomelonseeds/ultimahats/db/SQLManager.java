@@ -103,23 +103,21 @@ public class SQLManager {
      * @param uuid
      * @param callback
      */
-    public void getHat(UUID uuid, Callback callback) {
-        scheduler.runTaskAsynchronously(plugin, () -> {
-            try (Connection c = conn.getConnection(); PreparedStatement stmt = c.prepareStatement(
-                    "SELECT hat FROM ultimahats_players WHERE uuid = ?;"
-            )) {
-                stmt.setString(1, uuid.toString());
-                ResultSet resultSet = stmt.executeQuery();
-                String hat = null;
-                if (resultSet.next()) {
-                    hat = resultSet.getString("hat");
-                }
-                final String result = hat;
-                scheduler.runTask(plugin, () -> callback.onQueryDone(result));
-            } catch (SQLException e) {
-                logger.log(Level.SEVERE, "Failed to get hat for " + Bukkit.getPlayer(uuid).getName());
+    public String getHat(UUID uuid) {
+        try (Connection c = conn.getConnection(); PreparedStatement stmt = c.prepareStatement(
+                "SELECT hat FROM ultimahats_players WHERE uuid = ?;"
+        )) {
+            stmt.setString(1, uuid.toString());
+            ResultSet resultSet = stmt.executeQuery();
+            String hat = null;
+            if (resultSet.next()) {
+                hat = resultSet.getString("hat");
             }
-        });
+            return hat;
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Failed to get hat for " + Bukkit.getPlayer(uuid).getName());
+        }
+        return null;
     }
     
     /**
@@ -147,23 +145,21 @@ public class SQLManager {
      * @param uuid
      * @param callback
      */
-    public void getOwnedHats(UUID uuid, Callback callback) {
-        scheduler.runTaskAsynchronously(plugin, () -> {
-            try (Connection c = conn.getConnection(); PreparedStatement stmt = c.prepareStatement(
-                    "SELECT purchased FROM ultimahats_players WHERE uuid = ?;"
-            )) {
-                stmt.setString(1, uuid.toString());
-                ResultSet resultSet = stmt.executeQuery();
-                String hat = null;
-                if (resultSet.next()) {
-                    hat = resultSet.getString("hat");
-                }
-                final String result = hat;
-                scheduler.runTask(plugin, () -> callback.onQueryDone(result));
-            } catch (SQLException e) {
-                logger.log(Level.SEVERE, "Failed to get hat for " + Bukkit.getPlayer(uuid).getName());
+    public String getOwnedHats(UUID uuid) {
+        try (Connection c = conn.getConnection(); PreparedStatement stmt = c.prepareStatement(
+                "SELECT purchased FROM ultimahats_players WHERE uuid = ?;"
+        )) {
+            stmt.setString(1, uuid.toString());
+            ResultSet resultSet = stmt.executeQuery();
+            String hats = null;
+            if (resultSet.next()) {
+                hats = resultSet.getString("purchased");
             }
-        });
+            return hats; 
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Failed to get hat for " + Bukkit.getPlayer(uuid).getName());
+        }
+        return null;
     }
     
     /**
@@ -172,16 +168,12 @@ public class SQLManager {
      * @param uuid
      */
     public void saveNewHat(UUID uuid, String newHat) {
-        getOwnedHats(uuid, result -> {
-            // Add the new hat to the previous hats
-            String toSave = newHat;
-            if (result != null) {
-                String old = (String) result;
-                toSave = old + "," + newHat;
-            }
-            saveOwnedHats(uuid, toSave);
-        });
-        
+        String result = getOwnedHats(uuid);
+        String toSave = newHat;
+        if (result != null) {
+            toSave = result + "," + newHat;
+        }
+        saveOwnedHats(uuid, toSave);
     }
     
     /**
