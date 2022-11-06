@@ -4,17 +4,21 @@ force-remove-helmets: false
 
 # Accepts "MySQL" or "SQL"
 storage-method: SQL
-mysql-options:
-  host:
-  port:
-  user:
-  password:
-  database:
-  prefix:
+# Only configure this section if you are using MySQL
+mysql:
+  host: example.com
+  port: 3306
+  user: bukkit
+  password: "password"
+  database: mysql
+  
+# A list of worlds where players won't have hats. Case sensitive!
+disabled-worlds:
+  - example
 
 mainGUI:
   # Size of the GUI - must be a multiple of 9.
-  size: 27
+  size: 36
   # Fill the unused slots in the GUI with an item
   fill:
     enabled: true
@@ -22,24 +26,14 @@ mainGUI:
     name: ""
     # The starting and ending slots; all items in between (inclusive)
     # will be filled with the specified item.
-    start: 0
-    end: 26 
-  # The first three "heads", "banners", and "blocks" items are required
-  #
-  # New items can be added as required. They can execute commands, using 
-  # variable %player% if needed.
-  #
-  # Slots are 0 indexed - the first slot in the GUI is 0.
-  items:
-    heads:
-      item: PLAYER_HEAD
-      name: "&fPlayer Heads"
-      slot: 11
-    banners:
-      item: WHITE_BANNER
-      name: "&fBanners"
-      slot: 13
-    blocks:
-      item: STONE
-      name: "&fBlocks"
-      slot: 15
+    # Slots are 0-indexed, i.e. slot 1 is 0
+    start: 27
+    end: 35 
+  # New, non-hat items can be added as required. They can execute commands, 
+  # using variable %player% if needed.
+  example-back-button:
+    item: RED_STAINED_GLASS_PANE
+    name: "&cBack"
+    slot: 31
+    commands:
+      - "bossshop open cosmetics %player%"
