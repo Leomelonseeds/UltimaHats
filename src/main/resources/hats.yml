@@ -1,0 +1,109 @@
+# HAT FORMAT:
+# Each entry represents a unique hat. If the entry is changed, the hat will not work anymore.
+# Entries are presented IN ORDER to the GUI. This means that to change the ordering,
+# you should cut and paste the specified hat to an earlier position in this config.
+# For each entry, the options are:
+# [REQUIRED] item: the material to set the item
+# [REQUIRED] name: the display name of the hat in inventories
+# [OPTIONAL] lore: a list of strings to display as the item lore
+# [OPTIONAL] glow: true/false - should this item glow?
+# [OPTIONAL] requirements: A list of requirements that should all be met
+#                          for the player to be able to use this hat
+# [OPTIONAL] frames: A list of frames for this hat. Include this option
+#                    to make this hat animated.
+#
+# Requirements format:
+#   permissions: A list of permissions the player must have
+#   placeholders: If PAPI is installed, a list of placeholder requirements
+#                 format: "%placeholder%[compare][value]"
+#                 [compare] can be one of > >= = <= <
+#                 [value] can be a number, string, or another placeholder
+#                 Strings can only be compared with "="!
+#   cost: An economy cost that the player must pay to own this hat.
+#         The item is not buyable until all other requirements are met.
+# 
+# Frames format:
+#   Each frame is another entry that supports item, name, lore, glow etc
+#   each entry must also have a "time" key that specifies the frame's
+#   duration in ticks (20 ticks = 1 second).
+#   Frames are played in order and then looped.
+#   Each frame can also be a playerhead or banner!
+#
+# If the item is a PLAYER_HEAD:
+# Include the head's VALUE from your favorite head website.
+# You should be able to find this in whatever head page there is.
+# Then, include it in the head config as value: "[put value here]"
+#
+# If the item is a BANNER:
+# First, make sure the item name is colored, e.g. GREEN_BANNER
+# Next, go to your favorite banner generator site and find the /give code
+# Then, copy the code from where it says "Patterns:" to the end.
+# Include this in the head config as patterns: "[paste here]"
+#
+# Note that banners and playerheads don't support the glow option
+# Examples of blocks, banners, and playerheads can all be found below!
+
+# A normal hat that glows
+melon:
+  item: MELON
+  name: "&a&lMelon"
+  lore:
+    - ""
+    - "&7An amazing melon"
+  glow: true  
+  
+# An animated hat that cycles between slime and honey
+slime_honey:
+  item: SLIME_BLOCK
+  name: "&a&lSlimy"
+  lore:
+    - ""
+    - "&7This hat is animated!"
+  frames:
+    # Name and lore of each item will use the main one if not defined
+    # Each frame can also be a playerhead or banner!
+    1:
+      item: SLIME_BLOCK
+      time: 10
+    2:
+      item: HONEY_BLOCK
+      name: "&6&lHoney"
+      time: 10
+      
+# A cool banner
+banner:
+  item: BLUE_BANNER
+  patterns: "Patterns:[{Pattern:gra,Color:14},{Pattern:ss,Color:15},{Pattern:cbo,Color:15}]"
+  name: "&9&lPVP God"
+  lore:
+    - ""
+    - "&7A fancy banner for the best of the best."
+
+# A cup of soda playerhead
+head:
+  item: PLAYER_HEAD
+  value: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYTQyY2M5MjAzYzkwYjg5YmRhYzFkZjI4NDE2NzI2NmI5NTNkZmViZjNjNDY5MGE3Y2QwYjE1NzkxYTYyZTU4MiJ9fX0="
+  name: "&b&lCup of Soda"
+  lore:
+    - ""
+    - "&7Go ahead, ruin your teeth health"
+    
+# A hat that requires many things, including a cost of $1000
+hardtoget:
+  item: CARVED_PUMPKIN
+  name: "&6&lWorst Hat"
+  lore:
+    - ""
+    - "&7Why would you even go for this hat?"
+    - ""
+    - "&bRequirements:"
+    - "&7- Must have more than 15 health"
+    - "&7- Must have the VIP rank"
+    - "&7- Must be in the End"
+  requirements:
+    permissions:
+      - group.vip
+    placeholders:
+      - "%player_health%>15"
+      - "%player_world%=world_the_end"
+    cost: 1000
