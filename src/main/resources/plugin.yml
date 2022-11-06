@@ -4,5 +4,12 @@ main: com.leomelonseeds.ultimahats.UltimaHats
 api-version: 1.19
 author: M310N
 description: A feature-rich Hats cosmetic Spigot plugin.
-depend:
+softdepend:
   - Vault
+  - PlaceholderAPI
+commands:
+  ultimahats:
+    description: The core UltimaHats command
+    aliases:
+      - hats
+      - hat

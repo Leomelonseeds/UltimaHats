@@ -52,6 +52,11 @@
         	<id>jitpack.io</id>
         	<url>https://jitpack.io</url>
     	</repository>
+        <!-- PAPI repo -->
+        <repository>
+            <id>placeholderapi</id>
+            <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -61,17 +66,26 @@
 		    <artifactId>HikariCP</artifactId>
 		    <version>5.0.1</version>
 		</dependency>
+        <!-- Paper -->
         <dependency>
     		<groupId>io.papermc.paper</groupId>
     		<artifactId>paper-api</artifactId>
     		<version>1.19.2-R0.1-SNAPSHOT</version>
     		<scope>provided</scope>
 		</dependency>
+        <!-- Vault -->
         <dependency>
         	<groupId>com.github.MilkBowl</groupId>
         	<artifactId>VaultAPI</artifactId>
         	<version>1.7</version>
         	<scope>provided</scope>
     	</dependency>
+        <!-- PAPI API  -->
+        <dependency>
+            <groupId>me.clip</groupId>
+            <artifactId>placeholderapi</artifactId>
+            <version>2.9.2</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>

@@ -4,20 +4,23 @@ import java.io.File;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.leomelonseeds.ultimahats.db.SQLManager;
 import com.leomelonseeds.ultimahats.inv.InventoryManager;
+
+import net.milkbowl.vault.economy.Economy;
 
 public class UltimaHats extends JavaPlugin {
     
     public static UltimaHats plugin;
     private InventoryManager invs;
     private SQLManager sqlManager;
+    private Economy econ;
     
     @Override
     public void onEnable() {
-        
         log("Enabling UltimaHats...");
         plugin = this;
         invs = new InventoryManager();
@@ -31,8 +34,33 @@ public class UltimaHats extends JavaPlugin {
         setupDatabase();
         log("Database setup complete.");
         
-        
-        
+        log("Hooking into Vault...");
+        setupVault();
+    }
+    
+    @Override
+    public void onDisable() {
+        log("Closing database...");
+        sqlManager.close();
+        log("Have a nice day!");
+    }
+    
+    /**
+     * Checks if plugin has an economy provider
+     * 
+     * @return
+     */
+    public boolean hasEconomy() {
+        return econ != null;
+    }
+    
+    /**
+     * Checks if PlaceholderAPI is there
+     * 
+     * @return
+     */
+    public boolean hasPAPI() {
+        return Bukkit.getPluginManager().getPlugin("PlacehoderAPI") != null;
     }
     
     private void setupDatabase() {
@@ -49,6 +77,19 @@ public class UltimaHats extends JavaPlugin {
     }
     
     /**
+     * Setup the economy manager
+     */
+    private void setupVault() {
+        RegisteredServiceProvider<Economy> rspE = getServer().getServicesManager().getRegistration(Economy.class);
+        if (rspE == null) {
+            getLogger().log(Level.WARNING, "Vault not found! Cost requirements will not work");
+            return;
+        }
+        econ = rspE.getProvider();
+        log("Economy setup complete.");
+    }
+    
+    /**
      * Save a resource if it is not present
     *
     * @param resourcePath the path to the resource
@@ -59,13 +100,6 @@ public class UltimaHats extends JavaPlugin {
            saveResource(resourcePath, false);
        }
    }
-    
-    @Override
-    public void onDisable() {
-        log("Closing database...");
-        sqlManager.close();
-        log("Have a nice day!");
-    }
     
     public static UltimaHats getPlugin() {
         return plugin;
