@@ -14,7 +14,6 @@ import org.bukkit.inventory.meta.SkullMeta;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
 import com.leomelonseeds.ultimahats.UltimaHats;
-import com.leomelonseeds.ultimahats.db.Callback;
 
 public class ItemUtils {
     
@@ -65,6 +64,17 @@ public class ItemUtils {
     
     /**
      * Make an item from the specified configuration section.
+     * Used for making the physical item to wear
+     * 
+     * @param section
+     * @return
+     */
+    public static ItemStack makeItem(ConfigurationSection section) {
+        return makeItem(section, false, null);
+    }
+    
+    /**
+     * Make an item from the specified configuration section.
      * Extra args used for constructing the GUI items.
      * 
      * @param section
@@ -72,7 +82,7 @@ public class ItemUtils {
      * @param player
      * @return
      */
-    public static ItemStack makeItem(ConfigurationSection section, boolean gui, Player player, Callback callback) {
+    public static ItemStack makeItem(ConfigurationSection section, boolean gui, Player player) {
         // Check if material and item exist
         Material material = Material.getMaterial(section.getString("item"));
         String name = section.getString("name");
@@ -95,18 +105,15 @@ public class ItemUtils {
         if (gui) {
             ConfigurationSection strings = UltimaHats.getPlugin().getConfig().getConfigurationSection("lore"); 
         }
+        
+        // Add skull data if necessary
+        if (material == Material.PLAYER_HEAD) {
+            String base64EncodedString = section.getString("value");
+            SkullMeta skullmeta = (SkullMeta) meta;
+            PlayerProfile profile = Bukkit.createProfile(UUID.randomUUID());
+            profile.setProperty(new ProfileProperty("textures", base64EncodedString));
+            skullmeta.setPlayerProfile(profile);
+        }
         return null;
     }
-    
-    // Make skull from base64 string
-    private ItemStack makeSkull(String base64EncodedString) {
-        ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
-        SkullMeta meta = (SkullMeta) skull.getItemMeta();
-        PlayerProfile profile = Bukkit.createProfile(UUID.randomUUID());
-        profile.setProperty(new ProfileProperty("textures", base64EncodedString));
-        meta.setPlayerProfile(profile);
-        skull.setItemMeta(meta);
-        return skull;
-    }
-
 }
