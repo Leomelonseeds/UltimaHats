@@ -2,8 +2,10 @@ package com.leomelonseeds.ultimahats.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,6 +14,7 @@ import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.block.banner.PatternType;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
@@ -23,6 +26,11 @@ import org.bukkit.inventory.meta.SkullMeta;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
 import com.leomelonseeds.ultimahats.UltimaHats;
+import com.leomelonseeds.ultimahats.wearer.AnimatedWearer;
+import com.leomelonseeds.ultimahats.wearer.Wearer;
+import com.leomelonseeds.ultimahats.wearer.WearerManager;
+
+import me.clip.placeholderapi.PlaceholderAPI;
 
 public class ItemUtils {
     
@@ -48,16 +56,71 @@ public class ItemUtils {
      * @param hat
      */
     public static void applyHat(Player player, String hat) {
+        // Make sure section exists if loading from db
+        ConfigurationSection section = ConfigUtils.getConfigFile("hats.yml").getConfigurationSection(hat);
+        if (section == null) {
+            Bukkit.getLogger().log(Level.WARNING, "Failed to find " + player.getName() + "'s saved hat " + hat);
+            return;
+        }
         
+        // Check if player is already wearing a thing
+        if (!UltimaHats.getPlugin().getConfig().getBoolean("force-remove-helmets")) {
+            player.sendMessage(ConfigUtils.getString("armor-equipped"));
+            return;
+        }
+        
+        // Initialize wearer
+        Wearer wearer = new Wearer(player, hat);
+        if (section.contains("frames")) {
+            wearer = new AnimatedWearer(player, hat);
+        }
+        
+        // Check if the item can be made
+        if (!wearer.initializeHat()) {
+            Bukkit.getLogger().log(Level.WARNING, "The hat '" + hat + "' could not be initialized (incorrect config?)");
+            return;
+        }
+        
+        // If all checks passed, add to wearer list
+        UltimaHats.getPlugin().getWearers().addWearer(wearer);
+        String msg = ConfigUtils.getString("hat-selected");
+        msg = msg.replaceAll("%hat%", section.getString("name"));
+        player.sendMessage(ConfigUtils.toComponent(msg));
+    }
+    
+    /**
+     * Applies an item to the player. If an item is already on the
+     * player's head, it is either placed into inventory or dropped.
+     * 
+     * @param player
+     * @param item
+     */
+    public static void applyItem(Player player, ItemStack item) {
+        if (player.getInventory().getHelmet().getType() != Material.AIR) {
+            ItemStack helmet = player.getInventory().getHelmet();
+            HashMap<Integer, ItemStack> extra = player.getInventory().addItem(helmet);
+            if (!extra.isEmpty()) {
+                player.getWorld().dropItem(player.getLocation(), helmet);
+            }
+            player.sendMessage(ConfigUtils.getString("armor-removed"));
+        }
+        player.getInventory().setHelmet(item);
     }
     
     /**
      * Removes player's currently equipped hat, if there is one
      * 
      * @param player
+     * @return true if a hat was removed
      */
-    public static void removeHat(Player player) {
-        
+    public static boolean removeHat(Player player) {
+        WearerManager wm = UltimaHats.getPlugin().getWearers();
+        if (!wm.isWearing(player)) {
+            return false;
+        }
+        player.getInventory().setHelmet(null);
+        player.sendMessage(ConfigUtils.getString("hat-unequipped"));
+        return true;
     }
     
     /**
@@ -90,6 +153,16 @@ public class ItemUtils {
             return 1;
         }
         
+        // Check hat requirements
+        if (requirements.contains("hats")) {
+            List<String> hats = requirements.getStringList("hats");
+            for (String h : hats) {
+                if (!ownsHat(player, h)) {
+                    return -1;
+                }
+            }
+        }
+        
         // Check permission requirements
         if (requirements.contains("permissions")) {
             List<String> permissions = requirements.getStringList("permissions");
@@ -104,7 +177,63 @@ public class ItemUtils {
         if (requirements.contains("placeholders") && UltimaHats.getPlugin().hasPAPI()) {
             List<String> placeholders = requirements.getStringList("placeholders");
             for (String p : placeholders) {
-                // TODO
+                // Set placeholders from PAPI
+                String toCompare = PlaceholderAPI.setPlaceholders(player, p);
+                int comparatorIndex = -1;
+                String comparator = null;
+                
+                // Find first occurence of comparator
+                String[] comparators = {">=", "<=", "=", "<", ">"};
+                for (String c : comparators) {
+                    if (toCompare.contains(c)) {
+                        comparatorIndex = toCompare.indexOf(c);
+                        comparator = c;
+                        break;
+                    }
+                }
+                
+                // Error if not parseable
+                if (comparatorIndex == -1 || comparator == null || comparatorIndex + comparator.length() > toCompare.length()) {
+                    Bukkit.getLogger().log(Level.WARNING, "The requirement '" + p + "' is incorrectly defined!");
+                    continue;
+                }
+                
+                String left = toCompare.substring(0, comparatorIndex);
+                String right = toCompare.substring(comparatorIndex + comparator.length());
+                boolean success = false;
+                try {
+                    // Check if can be parsed into numbers
+                    double leftNum = Double.parseDouble(left);
+                    double rightNum = Double.parseDouble(right);
+                    switch (comparator) {
+                    case ">=":
+                        success = leftNum >= rightNum;
+                        break;
+                    case "<=":
+                        success = leftNum <= rightNum;
+                        break;
+                    case "=":
+                        success = leftNum == rightNum;
+                        break;
+                    case "<":
+                        success = leftNum < rightNum;
+                        break;
+                    case ">":
+                        success = leftNum > rightNum;
+                        break;
+                    }
+                } catch (NumberFormatException e) {
+                    // If not, Compare as strings instead
+                    if (!comparator.equals("=")) {
+                        Bukkit.getLogger().log(Level.WARNING, "The requirement '" + p + "' is incorrectly defined!");
+                        continue;
+                    }
+                    success = left.equals(right);
+                }
+                
+                if (!success) {
+                    return -1;
+                }
             }
         }
         
@@ -114,6 +243,19 @@ public class ItemUtils {
             return 0;
         }
         return 1;
+    }
+    
+    /**
+     * Check if a player can select a hat
+     * 
+     * @param player
+     * @param hat
+     * @return
+     */
+    private static boolean ownsHat(Player player, String hat) {
+        FileConfiguration hatsConfig = ConfigUtils.getConfigFile("hats.yml");
+        ConfigurationSection reqs = hatsConfig.getConfigurationSection(hat + ".requirements");
+        return purchasedHat(player, hat) || meetsRequirements(player, reqs) == 1;
     }
     
     /**

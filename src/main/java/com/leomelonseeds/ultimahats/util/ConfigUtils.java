@@ -46,6 +46,19 @@ public class ConfigUtils {
     }
 
     /**
+     * Get a string from the config's "strings" section
+     * 
+     * @param player
+     * @param string
+     * @return the parsed string
+     */
+    public static String getString(String string) {
+        String prefix = UltimaHats.getPlugin().getConfig().getString("strings.prefix");
+        String msg = UltimaHats.getPlugin().getConfig().getString("strings." + string);
+        return ChatColor.translateAlternateColorCodes('&', prefix + msg);
+    }
+    
+    /**
      * Get a line, translate it to a component.
      * 
      * @param line

@@ -9,6 +9,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.leomelonseeds.ultimahats.db.SQLManager;
 import com.leomelonseeds.ultimahats.inv.InventoryManager;
+import com.leomelonseeds.ultimahats.wearer.WearerManager;
 
 import net.milkbowl.vault.economy.Economy;
 
@@ -17,6 +18,7 @@ public class UltimaHats extends JavaPlugin {
     public static UltimaHats plugin;
     private InventoryManager invs;
     private SQLManager sqlManager;
+    private WearerManager wearerManager;
     private Economy econ;
     
     @Override
@@ -24,6 +26,7 @@ public class UltimaHats extends JavaPlugin {
         log("Enabling UltimaHats...");
         plugin = this;
         invs = new InventoryManager();
+        wearerManager = new WearerManager();
         
         log("Saving config files");
         saveDefaultConfig();
@@ -36,6 +39,8 @@ public class UltimaHats extends JavaPlugin {
         
         log("Hooking into Vault...");
         setupVault();
+        
+        log("UltimaHats ready to wear!");
     }
     
     @Override
@@ -115,5 +120,9 @@ public class UltimaHats extends JavaPlugin {
     
     public InventoryManager getInvs() {
         return invs;
+    }
+    
+    public WearerManager getWearers() {
+        return wearerManager;
     }
 }

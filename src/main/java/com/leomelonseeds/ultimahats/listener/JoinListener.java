@@ -11,6 +11,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 import com.leomelonseeds.ultimahats.UltimaHats;
 import com.leomelonseeds.ultimahats.util.ConfigUtils;
@@ -52,6 +53,12 @@ public class JoinListener implements Listener {
         }
         String cleaned = String.join(",", owned);
         plugin.getSQL().saveOwnedHats(player.getUniqueId(), cleaned);
+    }
+    
+    @EventHandler
+    public void onPlayerLeave(PlayerQuitEvent e) {
+        Player player = e.getPlayer();
+        plugin.getWearers().removeWearer(player);
     }
     
     @EventHandler

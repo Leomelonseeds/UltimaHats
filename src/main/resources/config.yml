@@ -42,6 +42,9 @@ mainGUI:
 strings:
   prefix: "&b&lHats &8&l» &7"
   hat-selected: "You are now wearing the %hat% &7hat"
+  hat-unequipped: "You unequipped your hat."
+  armor-equipped: "&cYou are already wearing another item!"
+  armor-removed: "&eThe item you were previously wearing was placed in your inventory or dropped."
   requirements-not-met: "&cYou don't meet the requirements to use this hat!"
   not-enough-money: "&cYou don't have enough money for this purchase!"
   hat-purchased: "You bought %hat% &7for &a%cost%&7!"

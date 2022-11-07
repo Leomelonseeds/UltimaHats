@@ -19,6 +19,7 @@
 #                 [compare] can be one of > >= = <= <
 #                 [value] can be a number, string, or another placeholder
 #                 Strings can only be compared with "="!
+#   hats: A list of other hats the player must also own
 #   cost: An economy cost that the player must pay to own this hat.
 #         The item is not buyable until all other requirements are met.
 # 
@@ -107,4 +108,6 @@ hardtoget:
     placeholders:
       - "%player_health%>15"
       - "%player_world%=world_the_end"
+    hats:
+      - slime_honey
     cost: 1000

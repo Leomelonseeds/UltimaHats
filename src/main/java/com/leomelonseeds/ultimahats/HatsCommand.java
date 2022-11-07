@@ -12,7 +12,7 @@ public class HatsCommand implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label,
             @NotNull String[] args) {
         if (args.length == 0) {
-            sendErrorMsg(sender, "Usage: /hats apply/remove/reload");
+            // Open the GUI
         }
         
         String action = args[0];
@@ -21,7 +21,7 @@ public class HatsCommand implements CommandExecutor {
             
         }
         
-        sendErrorMsg(sender, "Usage: /hats apply/remove/reload");
+        sendErrorMsg(sender, "Usage: /hats currentitem/apply/remove/reload");
         return true;
     }
     
