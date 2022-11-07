@@ -11,7 +11,9 @@ import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.block.banner.PatternType;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BannerMeta;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -175,6 +177,12 @@ public class ItemUtils {
                 bannerMeta.addPattern(new org.bukkit.block.banner.Pattern(DyeColor.getByDyeData(dyeColor), 
                         PatternType.getByIdentifier(bannerPattern)));
             }
+        }
+        
+        // Add glow if exists
+        if (section.contains("glow") && section.getBoolean("glow")) {
+            meta.addEnchant(Enchantment.DURABILITY, 1, true);
+            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         }
         
         item.setItemMeta(meta);
