@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.block.banner.PatternType;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -22,6 +23,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BannerMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.persistence.PersistentDataType;
 
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
@@ -294,6 +296,7 @@ public class ItemUtils {
         
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
+        String guiHat = section.getName();
         meta.displayName(ConfigUtils.toComponent(name));
         
         // Set lore if exists
@@ -306,7 +309,6 @@ public class ItemUtils {
             // Otherwise, "locked"
             List<String> extraLore;
             ConfigurationSection strings = UltimaHats.getPlugin().getConfig().getConfigurationSection("lore");
-            String guiHat = section.getName();
             String currentHat = UltimaHats.getPlugin().getSQL().getHat(player.getUniqueId());
             int requirementStatus = meetsRequirements(player, section.getConfigurationSection("requirements"));
             if (currentHat != null && guiHat.equals(currentHat)) {
@@ -356,6 +358,10 @@ public class ItemUtils {
             meta.addEnchant(Enchantment.DURABILITY, 1, true);
             meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         }
+        
+        // Add persistent data for this item for GUI use
+        meta.getPersistentDataContainer().set(new NamespacedKey(UltimaHats.getPlugin(), "hat"),
+                PersistentDataType.STRING, guiHat);
         
         item.setItemMeta(meta);
         return item;

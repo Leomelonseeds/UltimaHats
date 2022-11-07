@@ -7,6 +7,8 @@
 # [REQUIRED] name: the display name of the hat in inventories
 # [OPTIONAL] lore: a list of strings to display as the item lore
 # [OPTIONAL] glow: true/false - should this item glow?
+# [OPTIONAL] commands: a list of commands this hat should execute when
+#                      selected, using %player% as a variable
 # [OPTIONAL] requirements: A list of requirements that should all be met
 #                          for the player to be able to use this hat
 # [OPTIONAL] frames: A list of frames for this hat. Include this option
