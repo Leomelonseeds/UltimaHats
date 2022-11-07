@@ -57,4 +57,8 @@ lore:
   selected:
     - ""
     - "&aSelected!"
+  buyable:
+    - ""
+    - "&eAll requirements met!"
+    - "&6Cost: &b$%cost%"
  

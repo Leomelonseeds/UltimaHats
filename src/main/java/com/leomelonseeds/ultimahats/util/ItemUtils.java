@@ -1,13 +1,19 @@
 package com.leomelonseeds.ultimahats.util;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
+import org.bukkit.DyeColor;
 import org.bukkit.Material;
+import org.bukkit.block.banner.PatternType;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BannerMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
@@ -52,14 +58,30 @@ public class ItemUtils {
     }
     
     /**
-     * Checks the necessary conditions to see if a player owns a hat
+     * Returns true if the player has bought this hat
      * 
      * @param player
      * @param hat
      * @return
      */
-    public static boolean ownsHat(Player player, String hat) {
+    public static boolean purchasedHat(Player player, String hat) {
         return false;
+    }
+    
+    /**
+     * Checks if a player meets the requirements for a hat
+     * 
+     * @param player
+     * @param hat
+     * @return 1 if player meets all requirements and there is no cost,
+     * 0 if player meets all requirements and there is a cost,
+     * -1 if player does not meet all requirements.
+     */
+    public static int meetsRequirements(Player player, ConfigurationSection requirements) {
+        if (requirements == null) {
+            return 1;
+        }
+        return 0;
     }
     
     /**
@@ -103,8 +125,33 @@ public class ItemUtils {
         // Set lore if exists
         List<String> lore = section.getStringList("lore");
         if (gui) {
-            ConfigurationSection strings = UltimaHats.getPlugin().getConfig().getConfigurationSection("lore"); 
+            // If player has selected the hat, "selected"
+            // If player owns the hat (i.e. he must've also met all requirements), "click to select"
+            // If player meets all requirements and also does not have a cost, "click to select"
+            // If player meets all requirements and does have a cost, "click to buy"
+            // Otherwise, "locked"
+            List<String> extraLore;
+            ConfigurationSection strings = UltimaHats.getPlugin().getConfig().getConfigurationSection("lore");
+            String guiHat = section.getName();
+            String currentHat = UltimaHats.getPlugin().getSQL().getHat(player.getUniqueId());
+            int requirementStatus = meetsRequirements(player, section.getConfigurationSection("requirements"));
+            if (currentHat != null && guiHat.equals(currentHat)) {
+                extraLore = strings.getStringList("selected");
+            } else if (purchasedHat(player, currentHat) || requirementStatus == 1) {
+                extraLore = strings.getStringList("unlocked");
+            } else if (requirementStatus == 0) {
+                extraLore = new ArrayList<>();
+                int cost = section.getInt("requirements.cost");
+                for (String s : strings.getStringList("buyable")) {
+                    s = s.replaceAll("%cost%", cost + "");
+                    extraLore.add(s);
+                }
+            } else {
+                extraLore = strings.getStringList("locked");
+            }
+            lore.addAll(extraLore);
         }
+        meta.lore(ConfigUtils.toComponent(lore));
         
         // Add skull data if necessary
         if (material == Material.PLAYER_HEAD) {
@@ -114,6 +161,23 @@ public class ItemUtils {
             profile.setProperty(new ProfileProperty("textures", base64EncodedString));
             skullmeta.setPlayerProfile(profile);
         }
-        return null;
+        
+        // Add banner patterns if necessary
+        if (material.toString().contains("BANNER")) {
+            BannerMeta bannerMeta = (BannerMeta) meta;
+            String patterns = section.getString("patterns");
+            Pattern regex = Pattern.compile("Pattern:(\\w+),Color:(\\d+)");
+            Matcher matcher = regex.matcher(patterns);
+            while (matcher.find()) {
+                String bannerPattern = matcher.group(1);
+                String color = matcher.group(2);
+                byte dyeColor = Byte.parseByte(color);
+                bannerMeta.addPattern(new org.bukkit.block.banner.Pattern(DyeColor.getByDyeData(dyeColor), 
+                        PatternType.getByIdentifier(bannerPattern)));
+            }
+        }
+        
+        item.setItemMeta(meta);
+        return item;
     }
 }
