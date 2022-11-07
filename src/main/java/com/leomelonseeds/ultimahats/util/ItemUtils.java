@@ -1,6 +1,7 @@
 package com.leomelonseeds.ultimahats.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -67,6 +68,11 @@ public class ItemUtils {
      * @return
      */
     public static boolean purchasedHat(Player player, String hat) {
+        String owned = UltimaHats.getPlugin().getSQL().getOwnedHats(player.getUniqueId());
+        List<String> hats = Arrays.asList(owned.split(","));
+        if (hats.contains(hat)) {
+            return true;
+        }
         return false;
     }
     
@@ -83,7 +89,31 @@ public class ItemUtils {
         if (requirements == null) {
             return 1;
         }
-        return 0;
+        
+        // Check permission requirements
+        if (requirements.contains("permissions")) {
+            List<String> permissions = requirements.getStringList("permissions");
+            for (String p : permissions) {
+                if (!player.hasPermission(p)) {
+                    return -1;
+                }
+            }
+        }
+        
+        // Check placeholder requirements
+        if (requirements.contains("placeholders") && UltimaHats.getPlugin().hasPAPI()) {
+            List<String> placeholders = requirements.getStringList("placeholders");
+            for (String p : placeholders) {
+                // TODO
+            }
+        }
+        
+        // Check cost requirements. Don't need to check if player owns hat, since
+        // if they do, they already met the requirements.
+        if (requirements.contains("cost") && UltimaHats.getPlugin().hasEconomy()) {
+            return 0;
+        }
+        return 1;
     }
     
     /**
