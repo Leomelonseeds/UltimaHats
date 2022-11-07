@@ -20,6 +20,7 @@
 #                 [value] can be a number, string, or another placeholder
 #                 Strings can only be compared with "="!
 #   hats: A list of other hats the player must also own
+#         !!! DO NOT MAKE HATS THAT REQUIRE EACH OTHER. YOU WILL BREAK YOUR SERVER. !!!
 #   cost: An economy cost that the player must pay to own this hat.
 #         The item is not buyable until all other requirements are met.
 # 
@@ -54,7 +55,7 @@ melon:
   glow: true  
   
 # An animated hat that cycles between slime and honey
-slime_honey:
+animated_slime:
   item: SLIME_BLOCK
   name: "&a&lSlimy"
   lore:
@@ -109,5 +110,5 @@ hardtoget:
       - "%player_health%>15"
       - "%player_world%=world_the_end"
     hats:
-      - slime_honey
+      - melon
     cost: 1000
