@@ -102,6 +102,7 @@ hardtoget:
     - "&bRequirements:"
     - "&7- Must have more than 15 health"
     - "&7- Must have the VIP rank"
+    - "&7- Must own the &a&lMelon &7hat"
     - "&7- Must be in the End"
   requirements:
     permissions:
