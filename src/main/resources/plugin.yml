@@ -13,3 +13,11 @@ commands:
     aliases:
       - hats
       - hat
+permissions:
+  ultimahats.hats:
+    default: true
+  ultimahats.reload: {}
+  ultimahats.currentitem: {}
+  ultimahats.apply: {}
+  ultimahats.remove: {}
+  
