@@ -48,27 +48,53 @@ public class ItemUtils {
         }
         
         String hat = result;
-        applyHat(player, hat);
+        
+        // Make sure section exists, just in case
+        ConfigurationSection section = ConfigUtils.getConfigFile("hats.yml").getConfigurationSection(hat);
+        if (section == null) {
+            Bukkit.getLogger().log(Level.WARNING, "Failed to find the hat " + hat + " for " + player.getName());
+            return;
+        }
+        
+        // Initialize wearer
+        Wearer wearer = new Wearer(player, hat);
+        if (section.contains("frames")) {
+            wearer = new AnimatedWearer(player, hat);
+        }
+        
+        // Check if the item can be made
+        if (!wearer.initializeHat()) {
+            Bukkit.getLogger().log(Level.WARNING, "The hat '" + hat + "' could not be initialized (incorrect config?)");
+            return;
+        }
+        
+        // If all checks passed, add to wearer list
+        UltimaHats.getPlugin().getWearers().addWearer(wearer);
     }
     
     /**
-     * Applies a hat to player, removing any previous custom hats
+     * Applies a hat to player from GUI, removing any previous custom hats
      * 
      * @param player
      * @param hat
      */
     public static boolean applyHat(Player player, String hat) {
-        // Make sure section exists if loading from db
+        WearerManager wm = UltimaHats.getPlugin().getWearers();
         ConfigurationSection section = ConfigUtils.getConfigFile("hats.yml").getConfigurationSection(hat);
-        if (section == null) {
-            Bukkit.getLogger().log(Level.WARNING, "Failed to find the hat " + hat + " for " + player.getName());
-            return false;
-        }
         
         // Check if player is already wearing a thing
-        if (!UltimaHats.getPlugin().getConfig().getBoolean("force-remove-helmets") && hasNonCustomHat(player)) {
-            player.sendMessage(ConfigUtils.getString("armor-equipped", player));
-            return false;
+        if (!wm.isWearing(player) && player.getInventory().getHelmet() != null) {
+            if (!UltimaHats.getPlugin().getConfig().getBoolean("force-remove-helmets")) {
+                player.sendMessage(ConfigUtils.getString("armor-equipped", player));
+                return false;
+            } else {
+                ItemStack helmet = player.getInventory().getHelmet();
+                HashMap<Integer, ItemStack> extra = player.getInventory().addItem(helmet);
+                if (!extra.isEmpty()) {
+                    player.getWorld().dropItem(player.getLocation(), helmet);
+                }
+                player.sendMessage(ConfigUtils.getString("armor-removed", player));
+            }
         }
         
         // Initialize wearer
@@ -83,7 +109,7 @@ public class ItemUtils {
             return false;
         }
         
-        // If all checks passed, add to wearer list
+        // If all checks passed, add to wearer list and send message
         UltimaHats.getPlugin().getWearers().addWearer(wearer);
         UltimaHats.getPlugin().getSQL().savePlayerHat(player.getUniqueId(), hat);
         String msg = ConfigUtils.getString("hat-selected", player);
@@ -93,32 +119,13 @@ public class ItemUtils {
     }
     
     /**
-     * Applies an item to the player. If an non-custom hat item is 
-     * already on the player's head, it is either placed into 
-     * inventory or dropped.
+     * Applies an item to the player's head
      * 
      * @param player
      * @param item
      */
     public static void applyItem(Player player, ItemStack item) {
-        if (hasNonCustomHat(player)) {
-            ItemStack helmet = player.getInventory().getHelmet();
-            HashMap<Integer, ItemStack> extra = player.getInventory().addItem(helmet);
-            if (!extra.isEmpty()) {
-                player.getWorld().dropItem(player.getLocation(), helmet);
-            }
-            player.sendMessage(ConfigUtils.getString("armor-removed", player));
-        }
         player.getInventory().setHelmet(item);
-    }
-    
-    // Check if player has a non-custom helmet on
-    private static boolean hasNonCustomHat(Player player) {
-        WearerManager wm = UltimaHats.getPlugin().getWearers();
-        if (!wm.isWearing(player) && player.getInventory().getHelmet() != null) {
-            return true;
-        }
-        return false;
     }
     
     /**
