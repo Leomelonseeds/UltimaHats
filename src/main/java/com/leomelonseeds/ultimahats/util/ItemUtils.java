@@ -371,7 +371,7 @@ public class ItemUtils {
                 String bannerPattern = matcher.group(1);
                 String color = matcher.group(2);
                 byte dyeColor = Byte.parseByte(color);
-                bannerMeta.addPattern(new org.bukkit.block.banner.Pattern(DyeColor.getByDyeData(dyeColor), 
+                bannerMeta.addPattern(new org.bukkit.block.banner.Pattern(DyeColor.getByWoolData(dyeColor), 
                         PatternType.getByIdentifier(bannerPattern)));
             }
         }
