@@ -292,6 +292,9 @@ public class ItemUtils {
         // Check if material and item exist
         Material material = Material.getMaterial(section.getString("item"));
         String name = section.getString("name");
+        if (section.getCurrentPath().contains("frames") && name == null) {
+            name = section.getParent().getParent().getString("name");
+        }
         if (material == null || name == null) {
             return null;
         }
@@ -309,6 +312,9 @@ public class ItemUtils {
         
         // Set lore if exists
         List<String> lore = section.getStringList("lore");
+        if (section.getCurrentPath().contains("frames") && lore.isEmpty()) {
+            lore = section.getParent().getParent().getStringList("lore");
+        }
         if (gui) {
             // If player has selected the hat, "selected"
             // If player owns the hat (i.e. he must've also met all requirements), "click to select"
@@ -321,7 +327,7 @@ public class ItemUtils {
             int requirementStatus = meetsRequirements(player, section.getConfigurationSection("requirements"));
             if (currentHat != null && guiHat.equals(currentHat)) {
                 extraLore = strings.getStringList("selected");
-            } else if (purchasedHat(player, currentHat) || requirementStatus == 1) {
+            } else if (purchasedHat(player, guiHat) || requirementStatus == 1) {
                 extraLore = strings.getStringList("unlocked");
             } else if (requirementStatus == 0) {
                 extraLore = new ArrayList<>();
@@ -362,7 +368,11 @@ public class ItemUtils {
         }
         
         // Add glow if exists
-        if (section.contains("glow") && section.getBoolean("glow")) {
+        boolean glow = section.getBoolean("glow");
+        if (section.getCurrentPath().contains("frames") && !glow) {
+            glow = section.getParent().getParent().getBoolean("glow");
+        }
+        if (glow) {
             meta.addEnchant(Enchantment.DURABILITY, 1, true);
             meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         }
