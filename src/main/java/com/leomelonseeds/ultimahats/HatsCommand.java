@@ -122,7 +122,7 @@ public class HatsCommand implements CommandExecutor {
     // Returns true if sender has permission for this action
     private boolean checkPermission(CommandSender sender, String action) {
         if (action == null) {
-            return (sender.hasPermission("ultmahats.hats"));
+            return (sender.hasPermission("ultimahats.hats"));
         }
         return (sender.hasPermission("ultimahats." + action));
     }
