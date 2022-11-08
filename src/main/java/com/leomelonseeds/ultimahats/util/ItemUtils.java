@@ -58,8 +58,6 @@ public class ItemUtils {
      * @param hat
      */
     public static boolean applyHat(Player player, String hat) {
-        ItemUtils.removeHat(player);
-        
         // Make sure section exists if loading from db
         ConfigurationSection section = ConfigUtils.getConfigFile("hats.yml").getConfigurationSection(hat);
         if (section == null) {
@@ -68,11 +66,9 @@ public class ItemUtils {
         }
         
         // Check if player is already wearing a thing
-        if (!UltimaHats.getPlugin().getConfig().getBoolean("force-remove-helmets")) {
-            if (player.getInventory().getHelmet() != null) {
-                player.sendMessage(ConfigUtils.getString("armor-equipped", player));
-                return false;
-            }
+        if (!UltimaHats.getPlugin().getConfig().getBoolean("force-remove-helmets") && hasNonCustomHat(player)) {
+            player.sendMessage(ConfigUtils.getString("armor-equipped", player));
+            return false;
         }
         
         // Initialize wearer
@@ -105,8 +101,7 @@ public class ItemUtils {
      * @param item
      */
     public static void applyItem(Player player, ItemStack item) {
-        WearerManager wm = UltimaHats.getPlugin().getWearers();
-        if (!wm.isWearing(player) && player.getInventory().getHelmet() != null) {
+        if (hasNonCustomHat(player)) {
             ItemStack helmet = player.getInventory().getHelmet();
             HashMap<Integer, ItemStack> extra = player.getInventory().addItem(helmet);
             if (!extra.isEmpty()) {
@@ -115,6 +110,15 @@ public class ItemUtils {
             player.sendMessage(ConfigUtils.getString("armor-removed", player));
         }
         player.getInventory().setHelmet(item);
+    }
+    
+    // Check if player has a non-custom helmet on
+    private static boolean hasNonCustomHat(Player player) {
+        WearerManager wm = UltimaHats.getPlugin().getWearers();
+        if (!wm.isWearing(player) && player.getInventory().getHelmet() != null) {
+            return true;
+        }
+        return false;
     }
     
     /**
