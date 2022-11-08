@@ -122,6 +122,7 @@ public class ItemUtils {
         }
         player.getInventory().setHelmet(null);
         player.sendMessage(ConfigUtils.getString("hat-unequipped"));
+        UltimaHats.getPlugin().getSQL().savePlayerHat(player.getUniqueId(), null);
         return true;
     }
     
