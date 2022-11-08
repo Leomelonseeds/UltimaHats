@@ -20,8 +20,13 @@ mainGUI:
   # Title of the gui
   title: "&b&lHats"
   # Size of the GUI - must be a multiple of 9.
+  # Remember to change all other slot values below
+  # after changing this to prevent errors.
   size: 36
   # How many spaces in the GUI should the hats occupy?
+  # Must be less than "size" above.
+  # If you change the size, a good idea would be to
+  # set this to size - 9
   hatsSize: 27
   # Fill the unused slots in the GUI with an item
   fill:
@@ -71,6 +76,29 @@ strings:
   requirements-not-met: "&cYou don't own this hat!"
   not-enough-money: "&cYou don't have enough money for this purchase!"
   hat-purchased: "You bought %hat% &7for &a%cost%&7!"
+  
+# Sounds associated to messages
+sounds:
+  hat-selected:
+    sound: ITEM_ARMOR_EQUIP_IRON
+    volume: 1.0
+    pitch: 1.0
+  hat-unequipped:
+    sound: ITEM_ARMOR_EQUIP_ELYTRA
+    volume: 1.0
+    pitch: 1.0
+  hat-purchased:
+    sound: ENTITY_PLAYER_LEVELUP
+    volume: 1.0
+    pitch: 1.0
+  requirements-not-met:
+    sound: BLOCK_NOTE_BLOCK_BASS
+    volume: 1.0
+    pitch: 1.0
+  not-enough-money:
+    sound: BLOCK_NOTE_BLOCK_BASS
+    volume: 1.0
+    pitch: 1.0
   
 # Lore added to the end of hats to indicate locked status
 lore:

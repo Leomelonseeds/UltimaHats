@@ -5,15 +5,21 @@ import java.util.List;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 
 import com.leomelonseeds.ultimahats.UltimaHats;
 import com.leomelonseeds.ultimahats.util.ConfigUtils;
 import com.leomelonseeds.ultimahats.util.ItemUtils;
+
+import net.milkbowl.vault.economy.Economy;
 
 public class HatsMenu implements HatInventory {
     
@@ -90,8 +96,105 @@ public class HatsMenu implements HatInventory {
 
     @Override
     public void registerClick(int slot, ClickType type) {
-        // TODO Auto-generated method stub
-
+        if (type != ClickType.LEFT) {
+            return;
+        }
+        
+        ItemStack item = inv.getItem(slot);
+        if (item == null) {
+            return;
+        }
+        
+        // Get the config section of the clicked item
+        ItemMeta meta = item.getItemMeta();
+        if (!meta.getPersistentDataContainer().has(new NamespacedKey(UltimaHats.getPlugin(), "hat"),
+                PersistentDataType.STRING)) {
+            return;
+        }
+        String clicked = meta.getPersistentDataContainer().get(new NamespacedKey(UltimaHats.getPlugin(), "hat"),
+                PersistentDataType.STRING);
+        
+        // Check page/unequip items
+        if (clicked.equals("next-page")) {
+            page++;
+            updateInventory();
+            return;
+        }
+        
+        if (clicked.equals("last-page")) {
+            page--;
+            updateInventory();
+            return;
+        }
+        
+        if (clicked.equals("unequip") && ItemUtils.removeHat(player)) {
+            updateInventory();
+            return;
+        }
+        
+        // Check through extra items and execute commands
+        Set<String> extras = mainConfig.getConfigurationSection("mainGUI.extra-items").getKeys(false);
+        if (extras.contains(clicked)) {
+            executeCommands(mainConfig.getConfigurationSection("mainGUI.extra-items" + clicked));
+            return;
+        }
+        
+        // Check through hats to see if player clicked on a hat
+        Set<String> hats = hatsConfig.getKeys(false);
+        if (hats.contains(clicked)) {
+            // Don't do anything if player has hat selected
+            if (plugin.getSQL().getHat(player.getUniqueId()).equals(clicked)) {
+                return;
+            }
+            
+            int requirementStatus = ItemUtils.meetsRequirements(player, hatsConfig.getConfigurationSection(clicked + ".requirements"));
+            
+            // Select hat if player owns it
+            if (requirementStatus == 1 || ItemUtils.purchasedHat(player, clicked)) {
+                ItemUtils.applyHat(player, clicked);
+                updateInventory();
+                return;
+            }
+            
+            // Hat is buyable - fetch cost and make purchase
+            // At this point the plugin already knows an economy plugin exists
+            if (requirementStatus == 0) {
+                Economy econ = plugin.getEcon();
+                double cost = hatsConfig.getDouble(clicked + ".requirements.cost");
+                double bal = econ.getBalance(player);
+                if (bal < cost) {
+                    player.sendMessage(ConfigUtils.getString("not-enough-money", player));
+                    return;
+                } else {
+                    new ConfirmAction("Purchase " + clicked + " for $" + cost, player, this, confirm -> {
+                        econ.withdrawPlayer(player, cost);
+                        plugin.getSQL().saveNewHat(player.getUniqueId(), clicked);
+                        String purchase = ConfigUtils.getString("hat-purchased", player);
+                        purchase = purchase.replace("%hat%", hatsConfig.getString(clicked + ".name"));
+                        purchase = purchase.replace("%cost%", "" + hatsConfig.getDouble(clicked + ".requirements.cost"));
+                        player.sendMessage(ConfigUtils.toComponent(purchase));
+                    });
+                    updateInventory();
+                    return;
+                }
+            }
+            
+            // Player has not unlocked hat
+            if (requirementStatus == -1) {
+                player.sendMessage(ConfigUtils.getString("requirements-not-met", player));
+                return;
+            }
+        }
+    }
+    
+    // Execute commands for a config section, if there are any
+    private void executeCommands(ConfigurationSection section) {
+        if (section.contains("commands")) {
+            for (String command : section.getStringList("commands")) {
+                command = command.replaceAll("%player%", player.getName());
+                Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
+            }
+        }
     }
 
     @Override

@@ -8,9 +8,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Sound;
+import org.bukkit.SoundCategory;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 
 import com.leomelonseeds.ultimahats.UltimaHats;
 
@@ -46,24 +50,47 @@ public class ConfigUtils {
     }
     
     /**
-     * Reloads all loaded configs
+     * Reloads all loaded configs, closing all GUIs
      */
     public static void reloadConfigs() {
         UltimaHats.getPlugin().reloadConfig();
+        UltimaHats.getPlugin().getInvs().stopAll();
         configCache.clear();
     }
 
     /**
      * Get a string from the config's "strings" section
+     * Plays an associated sound too, if there is any
      * 
      * @param player
      * @param string
      * @return the parsed string
      */
-    public static String getString(String string) {
+    public static String getString(String string, Player player) {
         String prefix = UltimaHats.getPlugin().getConfig().getString("strings.prefix");
         String msg = UltimaHats.getPlugin().getConfig().getString("strings." + string);
+        sendConfigSound(string, player);
         return ChatColor.translateAlternateColorCodes('&', prefix + msg);
+    }
+    
+    /**
+     * Send a sound to the player.
+     *
+     * @param path the key of the sounds in "sounds"
+     * @param player the player to send sound to
+     */
+    public static void sendConfigSound(String path, Player player) {
+        ConfigurationSection soundConfig = UltimaHats.getPlugin().getConfig().getConfigurationSection("sounds");
+
+        if (!soundConfig.contains(path)) {
+            return;
+        }
+
+        Sound sound = Sound.valueOf(soundConfig.getString(path + ".sound"));
+        float volume = (float) soundConfig.getDouble(path + ".volume");
+        float pitch = (float) soundConfig.getDouble(path + ".pitch");
+
+        player.playSound(player.getLocation(), sound, SoundCategory.MASTER, volume, pitch);
     }
     
     /**

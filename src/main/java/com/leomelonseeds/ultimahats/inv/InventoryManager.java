@@ -3,6 +3,7 @@ package com.leomelonseeds.ultimahats.inv;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 public class InventoryManager {
@@ -26,5 +27,13 @@ public class InventoryManager {
     
     public void removePlayer(Player player) {
         inventoryCache.remove(player);
+    }
+    
+    // Closes all inventories
+    public void stopAll() {
+        inventoryCache.clear();
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            player.closeInventory();
+        }
     }
 }

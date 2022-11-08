@@ -127,6 +127,15 @@ public class UltimaHats extends JavaPlugin {
         return invs;
     }
     
+    /**
+     * Use this only if hasEconomy returned true
+     * 
+     * @return
+     */
+    public Economy getEcon() {
+        return econ;
+    }
+    
     public WearerManager getWearers() {
         return wearerManager;
     }

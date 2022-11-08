@@ -67,7 +67,7 @@ public class ItemUtils {
         
         // Check if player is already wearing a thing
         if (!UltimaHats.getPlugin().getConfig().getBoolean("force-remove-helmets")) {
-            player.sendMessage(ConfigUtils.getString("armor-equipped"));
+            player.sendMessage(ConfigUtils.getString("armor-equipped", player));
             return;
         }
         
@@ -85,7 +85,8 @@ public class ItemUtils {
         
         // If all checks passed, add to wearer list
         UltimaHats.getPlugin().getWearers().addWearer(wearer);
-        String msg = ConfigUtils.getString("hat-selected");
+        UltimaHats.getPlugin().getSQL().savePlayerHat(player.getUniqueId(), hat);
+        String msg = ConfigUtils.getString("hat-selected", player);
         msg = msg.replaceAll("%hat%", section.getString("name"));
         player.sendMessage(ConfigUtils.toComponent(msg));
     }
@@ -104,7 +105,7 @@ public class ItemUtils {
             if (!extra.isEmpty()) {
                 player.getWorld().dropItem(player.getLocation(), helmet);
             }
-            player.sendMessage(ConfigUtils.getString("armor-removed"));
+            player.sendMessage(ConfigUtils.getString("armor-removed", player));
         }
         player.getInventory().setHelmet(item);
     }
@@ -121,7 +122,7 @@ public class ItemUtils {
             return false;
         }
         player.getInventory().setHelmet(null);
-        player.sendMessage(ConfigUtils.getString("hat-unequipped"));
+        player.sendMessage(ConfigUtils.getString("hat-unequipped", player));
         UltimaHats.getPlugin().getSQL().savePlayerHat(player.getUniqueId(), null);
         return true;
     }
