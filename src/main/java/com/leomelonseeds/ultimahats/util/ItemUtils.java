@@ -52,12 +52,14 @@ public class ItemUtils {
     }
     
     /**
-     * Applies a hat to player
+     * Applies a hat to player, removing any previous custom hats
      * 
      * @param player
      * @param hat
      */
     public static boolean applyHat(Player player, String hat) {
+        ItemUtils.removeHat(player);
+        
         // Make sure section exists if loading from db
         ConfigurationSection section = ConfigUtils.getConfigFile("hats.yml").getConfigurationSection(hat);
         if (section == null) {
@@ -95,14 +97,16 @@ public class ItemUtils {
     }
     
     /**
-     * Applies an item to the player. If an item is already on the
-     * player's head, it is either placed into inventory or dropped.
+     * Applies an item to the player. If an non-custom hat item is 
+     * already on the player's head, it is either placed into 
+     * inventory or dropped.
      * 
      * @param player
      * @param item
      */
     public static void applyItem(Player player, ItemStack item) {
-        if (player.getInventory().getHelmet() != null) {
+        WearerManager wm = UltimaHats.getPlugin().getWearers();
+        if (!wm.isWearing(player) && player.getInventory().getHelmet() != null) {
             ItemStack helmet = player.getInventory().getHelmet();
             HashMap<Integer, ItemStack> extra = player.getInventory().addItem(helmet);
             if (!extra.isEmpty()) {
@@ -125,6 +129,7 @@ public class ItemUtils {
             return false;
         }
         player.getInventory().setHelmet(null);
+        wm.removeWearer(player);
         player.sendMessage(ConfigUtils.getString("hat-unequipped", player));
         UltimaHats.getPlugin().getSQL().savePlayerHat(player.getUniqueId(), null);
         return true;
