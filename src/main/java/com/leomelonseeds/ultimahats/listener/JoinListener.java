@@ -28,6 +28,7 @@ public class JoinListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
         Player player = e.getPlayer();
+        plugin.getSQL().createPlayer(player.getUniqueId(), result -> {});
         
         // Don't enable on disabled worlds
         if (!isHatWorld(player.getWorld())) {

@@ -79,7 +79,7 @@ public class SQLManager {
     }
     
     /**
-     * Create an entry for a new player
+     * Create an entry for a new player, if need be
      *
      * @param uuid
      */

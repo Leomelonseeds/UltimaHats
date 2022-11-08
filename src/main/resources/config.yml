@@ -68,14 +68,14 @@ mainGUI:
       
 # Messages sent by plugin to player
 strings:
-  prefix: "&b&lHats &8&l» &7"
+  prefix: "&b&lHats &8&lÂ» &7"
   hat-selected: "You are now wearing the %hat% &7hat"
   hat-unequipped: "You unequipped your hat."
   armor-equipped: "&cYou are already wearing another item!"
   armor-removed: "&eThe item you were previously wearing was placed in your inventory or dropped."
   requirements-not-met: "&cYou don't own this hat!"
   not-enough-money: "&cYou don't have enough money for this purchase!"
-  hat-purchased: "You bought %hat% &7for &a%cost%&7!"
+  hat-purchased: "You bought %hat% &7for &a$%cost%&7!"
   
 # Sounds associated to messages
 sounds:

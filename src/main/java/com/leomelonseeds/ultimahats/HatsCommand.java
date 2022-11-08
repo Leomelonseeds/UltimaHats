@@ -53,7 +53,11 @@ public class HatsCommand implements CommandExecutor {
                 return true;
             }
             
-            ItemUtils.applyHat(player, args[2]);
+            if (!ItemUtils.applyHat(player, args[2])) {
+                sendErrorMsg(sender, "Could not apply the hat to the player.");
+                return true;
+            }
+            
             sendSuccessMsg(sender, "Applied hat " + args[2] + " to " + args[1]);
             return true;
         }

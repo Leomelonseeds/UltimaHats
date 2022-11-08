@@ -29,10 +29,10 @@ public class DBConnectionManager {
         
         String type = plugin.getConfig().getString("storage-method");
         if (type.equalsIgnoreCase("mysql")) {
-            config.setJdbcUrl("jdbc:mysql://" + plugin.getConfig().getString("mysql.url")
+            config.setJdbcUrl("jdbc:mysql://" + plugin.getConfig().getString("mysql.host")
                     + ":" + plugin.getConfig().getInt("mysql.port")
                     + "/" + plugin.getConfig().getString("mysql.database"));
-            config.setUsername(plugin.getConfig().getString("mysql.username"));
+            config.setUsername(plugin.getConfig().getString("mysql.user"));
             config.setPassword(plugin.getConfig().getString("mysql.password"));
             config.addDataSourceProperty("cachePrepStmts", "true");
             config.addDataSourceProperty("prepStmtCacheSize", "250");

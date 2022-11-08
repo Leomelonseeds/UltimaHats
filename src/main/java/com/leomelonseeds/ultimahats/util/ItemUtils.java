@@ -57,18 +57,20 @@ public class ItemUtils {
      * @param player
      * @param hat
      */
-    public static void applyHat(Player player, String hat) {
+    public static boolean applyHat(Player player, String hat) {
         // Make sure section exists if loading from db
         ConfigurationSection section = ConfigUtils.getConfigFile("hats.yml").getConfigurationSection(hat);
         if (section == null) {
-            Bukkit.getLogger().log(Level.WARNING, "Failed to find " + player.getName() + "'s saved hat " + hat);
-            return;
+            Bukkit.getLogger().log(Level.WARNING, "Failed to find the hat " + hat + " for " + player.getName());
+            return false;
         }
         
         // Check if player is already wearing a thing
         if (!UltimaHats.getPlugin().getConfig().getBoolean("force-remove-helmets")) {
-            player.sendMessage(ConfigUtils.getString("armor-equipped", player));
-            return;
+            if (player.getInventory().getHelmet() != null) {
+                player.sendMessage(ConfigUtils.getString("armor-equipped", player));
+                return false;
+            }
         }
         
         // Initialize wearer
@@ -80,7 +82,7 @@ public class ItemUtils {
         // Check if the item can be made
         if (!wearer.initializeHat()) {
             Bukkit.getLogger().log(Level.WARNING, "The hat '" + hat + "' could not be initialized (incorrect config?)");
-            return;
+            return false;
         }
         
         // If all checks passed, add to wearer list
@@ -89,6 +91,7 @@ public class ItemUtils {
         String msg = ConfigUtils.getString("hat-selected", player);
         msg = msg.replaceAll("%hat%", section.getString("name"));
         player.sendMessage(ConfigUtils.toComponent(msg));
+        return true;
     }
     
     /**
@@ -99,7 +102,7 @@ public class ItemUtils {
      * @param item
      */
     public static void applyItem(Player player, ItemStack item) {
-        if (player.getInventory().getHelmet().getType() != Material.AIR) {
+        if (player.getInventory().getHelmet() != null) {
             ItemStack helmet = player.getInventory().getHelmet();
             HashMap<Integer, ItemStack> extra = player.getInventory().addItem(helmet);
             if (!extra.isEmpty()) {
@@ -136,6 +139,9 @@ public class ItemUtils {
      */
     public static boolean purchasedHat(Player player, String hat) {
         String owned = UltimaHats.getPlugin().getSQL().getOwnedHats(player.getUniqueId());
+        if (owned == null) {
+            return false;
+        }
         List<String> hats = Arrays.asList(owned.split(","));
         if (hats.contains(hat)) {
             return true;

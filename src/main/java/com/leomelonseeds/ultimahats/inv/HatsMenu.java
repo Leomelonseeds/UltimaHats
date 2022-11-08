@@ -60,7 +60,7 @@ public class HatsMenu implements HatInventory {
         }
         
         // Unequip item
-        ItemStack unequip = ItemUtils.makeItem(mainConfig.getConfigurationSection("unequip"));
+        ItemStack unequip = ItemUtils.makeItem(mainConfig.getConfigurationSection("mainGUI.unequip"));
         inv.setItem(mainConfig.getInt("mainGUI.unequip.slot"), unequip);
         
         // Extra items
@@ -135,7 +135,7 @@ public class HatsMenu implements HatInventory {
         // Check through extra items and execute commands
         Set<String> extras = mainConfig.getConfigurationSection("mainGUI.extra-items").getKeys(false);
         if (extras.contains(clicked)) {
-            executeCommands(mainConfig.getConfigurationSection("mainGUI.extra-items" + clicked));
+            executeCommands(mainConfig.getConfigurationSection("mainGUI.extra-items." + clicked));
             return;
         }
         
@@ -143,7 +143,8 @@ public class HatsMenu implements HatInventory {
         Set<String> hats = hatsConfig.getKeys(false);
         if (hats.contains(clicked)) {
             // Don't do anything if player has hat selected
-            if (plugin.getSQL().getHat(player.getUniqueId()).equals(clicked)) {
+            String currentHat = plugin.getSQL().getHat(player.getUniqueId());
+            if (currentHat != null && currentHat.equals(clicked)) {
                 return;
             }
             
@@ -151,8 +152,10 @@ public class HatsMenu implements HatInventory {
             
             // Select hat if player owns it
             if (requirementStatus == 1 || ItemUtils.purchasedHat(player, clicked)) {
-                ItemUtils.applyHat(player, clicked);
-                updateInventory();
+                if (ItemUtils.applyHat(player, clicked)) {
+                    executeCommands(hatsConfig.getConfigurationSection(clicked));
+                    updateInventory();
+                }
                 return;
             }
             
@@ -170,8 +173,8 @@ public class HatsMenu implements HatInventory {
                         econ.withdrawPlayer(player, cost);
                         plugin.getSQL().saveNewHat(player.getUniqueId(), clicked);
                         String purchase = ConfigUtils.getString("hat-purchased", player);
-                        purchase = purchase.replace("%hat%", hatsConfig.getString(clicked + ".name"));
-                        purchase = purchase.replace("%cost%", "" + hatsConfig.getDouble(clicked + ".requirements.cost"));
+                        purchase = purchase.replaceAll("%hat%", hatsConfig.getString(clicked + ".name"));
+                        purchase = purchase.replaceAll("%cost%", "" + hatsConfig.getDouble(clicked + ".requirements.cost"));
                         player.sendMessage(ConfigUtils.toComponent(purchase));
                     });
                     updateInventory();
