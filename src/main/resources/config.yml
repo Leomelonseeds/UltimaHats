@@ -17,8 +17,12 @@ disabled-worlds:
   - example
 
 mainGUI:
+  # Title of the gui
+  title: "&b&lHats"
   # Size of the GUI - must be a multiple of 9.
   size: 36
+  # How many spaces in the GUI should the hats occupy?
+  hatsSize: 27
   # Fill the unused slots in the GUI with an item
   fill:
     enabled: true
@@ -29,14 +33,33 @@ mainGUI:
     # Slots are 0-indexed, i.e. slot 1 is 0
     start: 27
     end: 35 
-  # New, non-hat items can be added as required. They can execute commands, 
-  # using variable %player% if needed.
-  example-back-button:
-    item: RED_STAINED_GLASS_PANE
-    name: "&cBack"
-    slot: 31
-    commands:
-      - "bossshop open cosmetics %player%"
+  # The button to unequip current hat
+  unequip:
+    item: BARRIER
+    name: "&dUnequip current hat"
+    lore:
+      - ""
+      - "&7Click to unequip your current hat,"
+      - "&7if you are wearing any."
+    slot: 32
+  # Page buttons, should there be multiple pages
+  next-page:
+    item: ARROW
+    name: "&fNext page"
+    slot: 35
+  last-page:
+    item: ARROW
+    name: "&fLast page"
+    slot: 27
+  # Extra, non-hat items can be added as required. They can execute commands, 
+  # using variable %player% if needed. You MUST include a "slot" option for each item
+  extra-items:
+    example-back-button:
+      item: RED_STAINED_GLASS_PANE
+      name: "&cBack"
+      slot: 31
+      commands:
+        - "bossshop open cosmetics %player%"
       
 # Messages sent by plugin to player
 strings:

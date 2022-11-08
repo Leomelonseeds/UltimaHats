@@ -44,6 +44,14 @@ public class ConfigUtils {
         configCache.put(configName, config);
         return config;
     }
+    
+    /**
+     * Reloads all loaded configs
+     */
+    public static void reloadConfigs() {
+        UltimaHats.getPlugin().reloadConfig();
+        configCache.clear();
+    }
 
     /**
      * Get a string from the config's "strings" section
