@@ -70,7 +70,7 @@ public class UltimaHats extends JavaPlugin {
      * @return
      */
     public boolean hasPAPI() {
-        return Bukkit.getPluginManager().getPlugin("PlacehoderAPI") != null;
+        return Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null;
     }
     
     private void setupDatabase() {
