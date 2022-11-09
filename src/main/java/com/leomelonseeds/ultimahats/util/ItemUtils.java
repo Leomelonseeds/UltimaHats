@@ -52,6 +52,7 @@ public class ItemUtils {
         // Make sure section exists, just in case
         ConfigurationSection section = ConfigUtils.getConfigFile("hats.yml").getConfigurationSection(hat);
         if (section == null) {
+            UltimaHats.getPlugin().getSQL().savePlayerHat(player.getUniqueId(), null);
             Bukkit.getLogger().log(Level.WARNING, "Failed to find the hat " + hat + " for " + player.getName());
             return;
         }
