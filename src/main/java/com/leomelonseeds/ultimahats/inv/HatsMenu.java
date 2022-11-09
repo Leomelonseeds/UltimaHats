@@ -80,13 +80,13 @@ public class HatsMenu implements HatInventory {
             
             // Epic pagination
             if (page > 0) {
-                ItemStack nextPage = ItemUtils.makeItem(mainConfig.getConfigurationSection("mainGUI.next-page"));
-                inv.setItem(mainConfig.getInt("mainGUI.next-page.slot"), nextPage);
+                ItemStack lastPage = ItemUtils.makeItem(mainConfig.getConfigurationSection("mainGUI.last-page"));
+                inv.setItem(mainConfig.getInt("mainGUI.last-page.slot"), lastPage);
             }
             
             if (page < maxPages - 1) {
-                ItemStack lastPage = ItemUtils.makeItem(mainConfig.getConfigurationSection("mainGUI.last-page"));
-                inv.setItem(mainConfig.getInt("mainGUI.last-page.slot"), lastPage);
+                ItemStack nextPage = ItemUtils.makeItem(mainConfig.getConfigurationSection("mainGUI.next-page"));
+                inv.setItem(mainConfig.getInt("mainGUI.next-page.slot"), nextPage);
             }
             
             // Finally set all the hat items
