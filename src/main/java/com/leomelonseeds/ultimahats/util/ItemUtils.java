@@ -382,6 +382,7 @@ public class ItemUtils {
                 bannerMeta.addPattern(new org.bukkit.block.banner.Pattern(DyeColor.getByWoolData(dyeColor), 
                         PatternType.getByIdentifier(bannerPattern)));
             }
+            bannerMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
         }
         
         // Add glow if exists
