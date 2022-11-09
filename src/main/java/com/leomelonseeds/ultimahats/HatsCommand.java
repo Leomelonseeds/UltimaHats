@@ -104,6 +104,7 @@ public class HatsCommand implements CommandExecutor {
             }
             
             ItemUtils.applyItem(player, item);
+            player.getInventory().setItemInMainHand(null);
             sendSuccessMsg(sender, "Applied your held item as a hat.");
             return true;
         }

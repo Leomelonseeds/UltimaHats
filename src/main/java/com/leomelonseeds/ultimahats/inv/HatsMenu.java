@@ -47,51 +47,54 @@ public class HatsMenu implements HatInventory {
 
     @Override
     public void updateInventory() {
-        inv.clear();
-        
-        // Fill items
-        if (mainConfig.getBoolean("mainGUI.fill.enabled")) {
-            ItemStack fill = ItemUtils.makeItem(mainConfig.getConfigurationSection("mainGUI.fill"));
-            int startIndex = mainConfig.getInt("mainGUI.fill.start");
-            int endIndex = mainConfig.getInt("mainGUI.fill.end");
-            for (int i = startIndex; i <= endIndex; i++) {
-                inv.setItem(i, fill);
+        // Run 1 tick later to properly update everything
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            inv.clear();
+            
+            // Fill items
+            if (mainConfig.getBoolean("mainGUI.fill.enabled")) {
+                ItemStack fill = ItemUtils.makeItem(mainConfig.getConfigurationSection("mainGUI.fill"));
+                int startIndex = mainConfig.getInt("mainGUI.fill.start");
+                int endIndex = mainConfig.getInt("mainGUI.fill.end");
+                for (int i = startIndex; i <= endIndex; i++) {
+                    inv.setItem(i, fill);
+                }
             }
-        }
-        
-        // Unequip item
-        ItemStack unequip = ItemUtils.makeItem(mainConfig.getConfigurationSection("mainGUI.unequip"));
-        inv.setItem(mainConfig.getInt("mainGUI.unequip.slot"), unequip);
-        
-        // Extra items
-        for (String key : mainConfig.getConfigurationSection("mainGUI.extra-items").getKeys(false)) {
-            String path = "mainGUI.extra-items." + key;
-            ItemStack item = ItemUtils.makeItem(mainConfig.getConfigurationSection(path));
-            inv.setItem(mainConfig.getInt(path + ".slot"), item);
-        }
-        
-        // Add pagination if too many hats
-        Set<String> keys = hatsConfig.getKeys(false);
-        List<String> hatKeys = new ArrayList<>(keys);
-        int keySize = hatKeys.size();
-        double maxPages = Math.ceil((double) keySize / hatsSize);
-        
-        // Epic pagination
-        if (page > 0) {
-            ItemStack nextPage = ItemUtils.makeItem(mainConfig.getConfigurationSection("mainGUI.next-page"));
-            inv.setItem(mainConfig.getInt("mainGUI.next-page.slot"), nextPage);
-        }
-        
-        if (page < maxPages - 1) {
-            ItemStack lastPage = ItemUtils.makeItem(mainConfig.getConfigurationSection("mainGUI.last-page"));
-            inv.setItem(mainConfig.getInt("mainGUI.last-page.slot"), lastPage);
-        }
-        
-        // Finally set all the hat items
-        for (int i = page * hatsSize; i < Math.min(keySize, page * hatsSize + hatsSize); i++) {
-            ItemStack hat = ItemUtils.makeItem(hatsConfig.getConfigurationSection(hatKeys.get(i)), true, player);
-            inv.setItem(i % hatsSize, hat);
-        }
+            
+            // Unequip item
+            ItemStack unequip = ItemUtils.makeItem(mainConfig.getConfigurationSection("mainGUI.unequip"));
+            inv.setItem(mainConfig.getInt("mainGUI.unequip.slot"), unequip);
+            
+            // Extra items
+            for (String key : mainConfig.getConfigurationSection("mainGUI.extra-items").getKeys(false)) {
+                String path = "mainGUI.extra-items." + key;
+                ItemStack item = ItemUtils.makeItem(mainConfig.getConfigurationSection(path));
+                inv.setItem(mainConfig.getInt(path + ".slot"), item);
+            }
+            
+            // Add pagination if too many hats
+            Set<String> keys = hatsConfig.getKeys(false);
+            List<String> hatKeys = new ArrayList<>(keys);
+            int keySize = hatKeys.size();
+            double maxPages = Math.ceil((double) keySize / hatsSize);
+            
+            // Epic pagination
+            if (page > 0) {
+                ItemStack nextPage = ItemUtils.makeItem(mainConfig.getConfigurationSection("mainGUI.next-page"));
+                inv.setItem(mainConfig.getInt("mainGUI.next-page.slot"), nextPage);
+            }
+            
+            if (page < maxPages - 1) {
+                ItemStack lastPage = ItemUtils.makeItem(mainConfig.getConfigurationSection("mainGUI.last-page"));
+                inv.setItem(mainConfig.getInt("mainGUI.last-page.slot"), lastPage);
+            }
+            
+            // Finally set all the hat items
+            for (int i = page * hatsSize; i < Math.min(keySize, page * hatsSize + hatsSize); i++) {
+                ItemStack hat = ItemUtils.makeItem(hatsConfig.getConfigurationSection(hatKeys.get(i)), true, player);
+                inv.setItem(i % hatsSize, hat);
+            }
+        }, 1);
     }
 
     @Override
@@ -170,6 +173,9 @@ public class HatsMenu implements HatInventory {
                     return;
                 } else {
                     new ConfirmAction("Purchase " + clicked + " for $" + cost, player, this, confirm -> {
+                        if (!confirm) {
+                            return;
+                        }
                         econ.withdrawPlayer(player, cost);
                         plugin.getSQL().saveNewHat(player.getUniqueId(), clicked);
                         String purchase = ConfigUtils.getString("hat-purchased", player);
