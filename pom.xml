@@ -60,6 +60,12 @@
     </repositories>
 
     <dependencies>
+    	<!-- Adventure Kyori -->
+    	<dependency>
+    		<groupId>net.kyori</groupId>
+    		<artifactId>adventure-platform-bukkit</artifactId>
+    		<version>4.1.2</version>
+ 		</dependency>
         <!-- Hikari -->
     	<dependency>
    			<groupId>com.zaxxer</groupId>
