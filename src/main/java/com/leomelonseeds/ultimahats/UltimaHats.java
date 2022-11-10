@@ -9,6 +9,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.leomelonseeds.ultimahats.db.SQLManager;
 import com.leomelonseeds.ultimahats.inv.InventoryManager;
+import com.leomelonseeds.ultimahats.listener.DeathListener;
 import com.leomelonseeds.ultimahats.listener.InventoryListener;
 import com.leomelonseeds.ultimahats.listener.JoinListener;
 import com.leomelonseeds.ultimahats.wearer.WearerManager;
@@ -31,6 +32,7 @@ public class UltimaHats extends JavaPlugin {
         wearerManager = new WearerManager();
         Bukkit.getPluginManager().registerEvents(new JoinListener(this), this);
         Bukkit.getPluginManager().registerEvents(new InventoryListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new DeathListener(this), this);
         getCommand("ultimahats").setExecutor(new HatsCommand());
         
         log("Saving config files");
