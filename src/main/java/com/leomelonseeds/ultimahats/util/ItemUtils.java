@@ -204,12 +204,15 @@ public class ItemUtils {
         if (requirements.contains("placeholders") && UltimaHats.getPlugin().hasPAPI()) {
             List<String> placeholders = requirements.getStringList("placeholders");
             for (String p : placeholders) {
-                // Set placeholders from PAPI
+                // Set placeholders from PAPI, reject if unparsed
                 String toCompare = PlaceholderAPI.setPlaceholders(player, p);
-                int comparatorIndex = -1;
-                String comparator = null;
+                if (toCompare.contains("%")) {
+                    return -1;
+                }
                 
                 // Find first occurence of comparator
+                int comparatorIndex = -1;
+                String comparator = null;
                 String[] comparators = {">=", "<=", "=", "<", ">"};
                 for (String c : comparators) {
                     if (toCompare.contains(c)) {
@@ -250,10 +253,9 @@ public class ItemUtils {
                         break;
                     }
                 } catch (NumberFormatException e) {
-                    // If not, Compare as strings instead
+                    // Compare as strings if cannot parse as number
                     if (!comparator.equals("=")) {
                         Bukkit.getLogger().log(Level.WARNING, "The requirement '" + p + "' is incorrectly defined!");
-                        continue;
                     }
                     success = left.equals(right);
                 }
