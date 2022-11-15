@@ -1,10 +1,5 @@
 package com.leomelonseeds.ultimahats.listener;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -14,7 +9,6 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import com.leomelonseeds.ultimahats.UltimaHats;
-import com.leomelonseeds.ultimahats.util.ConfigUtils;
 import com.leomelonseeds.ultimahats.util.ItemUtils;
 
 public class JoinListener implements Listener {
@@ -36,8 +30,10 @@ public class JoinListener implements Listener {
             return;
         }
         
+        // Apply player's saved hat, if there is one
         ItemUtils.applyHat(player);
         
+        /* REMOVED TO PREVENT DATA WIPES FROM USER ERROR
         // Check player's owned hats and remove those that don't exist
         // to save on storage space and improve tidyness
         String result = plugin.getSQL().getOwnedHats(player.getUniqueId());
@@ -54,6 +50,7 @@ public class JoinListener implements Listener {
         }
         String cleaned = String.join(",", owned);
         plugin.getSQL().saveOwnedHats(player.getUniqueId(), cleaned);
+        */
     }
     
     @EventHandler

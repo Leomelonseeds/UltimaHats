@@ -35,6 +35,7 @@ public class WearerManager {
                     ((AnimatedWearer) w).cancel();
                 }
                 wearers.remove(w);
+                player.getInventory().setHelmet(null);
                 break;
             }
         }

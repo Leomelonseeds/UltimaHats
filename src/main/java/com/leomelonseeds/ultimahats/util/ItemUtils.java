@@ -42,21 +42,12 @@ public class ItemUtils {
      * @param player
      */
     public static void applyHat(Player player) {
-        String result = UltimaHats.getPlugin().getSQL().getHat(player.getUniqueId());
-        if (result == null) {
+        String hat = UltimaHats.getPlugin().getSQL().getHat(player.getUniqueId());
+        if (hat == null) {
             return;
         }
         
-        String hat = result;
-        
-        // Make sure section exists, just in case. Unequip whatever is on player head if not
         ConfigurationSection section = ConfigUtils.getConfigFile("hats.yml").getConfigurationSection(hat);
-        if (section == null) {
-            player.getInventory().setHelmet(null);
-            Bukkit.getLogger().log(Level.WARNING, "Failed to find the hat " + hat + " for " + player.getName());
-            return;
-        }
-        
         initializeHat(player, section);
     }
     
@@ -98,7 +89,7 @@ public class ItemUtils {
     }
     
     // Initialize hat for player. Assumes hat exists.
-    private static boolean initializeHat(Player player, ConfigurationSection section) {
+    public static boolean initializeHat(Player player, ConfigurationSection section) {
         String hat = section.getName();
         
         // Initialize wearer
@@ -109,7 +100,7 @@ public class ItemUtils {
         
         // Check if the item can be made
         if (!wearer.initializeHat()) {
-            Bukkit.getLogger().log(Level.WARNING, "The hat '" + hat + "' could not be initialized (incorrect config?)");
+            Bukkit.getLogger().log(Level.WARNING, "The hat '" + hat + "' could not be initialized for " + player.getName() + " (incorrect config?)");
             return false;
         }
         
