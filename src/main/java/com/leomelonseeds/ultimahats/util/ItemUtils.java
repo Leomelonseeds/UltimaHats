@@ -49,28 +49,15 @@ public class ItemUtils {
         
         String hat = result;
         
-        // Make sure section exists, just in case
+        // Make sure section exists, just in case. Unequip whatever is on player head if not
         ConfigurationSection section = ConfigUtils.getConfigFile("hats.yml").getConfigurationSection(hat);
         if (section == null) {
-            UltimaHats.getPlugin().getSQL().savePlayerHat(player.getUniqueId(), null);
+            player.getInventory().setHelmet(null);
             Bukkit.getLogger().log(Level.WARNING, "Failed to find the hat " + hat + " for " + player.getName());
             return;
         }
         
-        // Initialize wearer
-        Wearer wearer = new Wearer(player, hat);
-        if (section.contains("frames")) {
-            wearer = new AnimatedWearer(player, hat);
-        }
-        
-        // Check if the item can be made
-        if (!wearer.initializeHat()) {
-            Bukkit.getLogger().log(Level.WARNING, "The hat '" + hat + "' could not be initialized (incorrect config?)");
-            return;
-        }
-        
-        // If all checks passed, add to wearer list
-        UltimaHats.getPlugin().getWearers().addWearer(wearer);
+        initializeHat(player, section);
     }
     
     /**
@@ -98,6 +85,22 @@ public class ItemUtils {
             }
         }
         
+        if (!initializeHat(player, section)) {
+            return false;
+        }
+        
+        // Save hat and show selection
+        UltimaHats.getPlugin().getSQL().savePlayerHat(player.getUniqueId(), hat);
+        String msg = ConfigUtils.getString("hat-selected", player);
+        msg = msg.replaceAll("%hat%", section.getString("name"));
+        player.sendMessage(ConfigUtils.toComponent(msg));
+        return true;
+    }
+    
+    // Initialize hat for player. Assumes hat exists.
+    private static boolean initializeHat(Player player, ConfigurationSection section) {
+        String hat = section.getName();
+        
         // Initialize wearer
         Wearer wearer = new Wearer(player, hat);
         if (section.contains("frames")) {
@@ -112,10 +115,6 @@ public class ItemUtils {
         
         // If all checks passed, add to wearer list and send message
         UltimaHats.getPlugin().getWearers().addWearer(wearer);
-        UltimaHats.getPlugin().getSQL().savePlayerHat(player.getUniqueId(), hat);
-        String msg = ConfigUtils.getString("hat-selected", player);
-        msg = msg.replaceAll("%hat%", section.getString("name"));
-        player.sendMessage(ConfigUtils.toComponent(msg));
         return true;
     }
     
