@@ -131,6 +131,7 @@ public class HatsMenu implements HatInventory {
         }
         
         if (clicked.equals("unequip") && ItemUtils.removeHat(player)) {
+            player.sendMessage(ConfigUtils.getString("hat-unequipped", player));
             updateInventory();
             return;
         }

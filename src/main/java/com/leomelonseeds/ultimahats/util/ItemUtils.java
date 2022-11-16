@@ -75,7 +75,8 @@ public class ItemUtils {
                 player.sendMessage(ConfigUtils.getString("armor-removed", player));
             }
         }
-        
+
+        removeHat(player);
         if (!initializeHat(player, section)) {
             return false;
         }
@@ -130,9 +131,7 @@ public class ItemUtils {
         if (!wm.isWearing(player)) {
             return false;
         }
-        player.getInventory().setHelmet(null);
         wm.removeWearer(player);
-        player.sendMessage(ConfigUtils.getString("hat-unequipped", player));
         UltimaHats.getPlugin().getSQL().savePlayerHat(player.getUniqueId(), null);
         return true;
     }
