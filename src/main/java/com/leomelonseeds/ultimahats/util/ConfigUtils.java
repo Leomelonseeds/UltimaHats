@@ -10,6 +10,7 @@ import java.util.Map;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
+import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -17,6 +18,8 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
 import com.leomelonseeds.ultimahats.UltimaHats;
+import com.leomelonseeds.ultimahats.wearer.Wearer;
+import com.leomelonseeds.ultimahats.wearer.WearerManager;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -49,13 +52,42 @@ public class ConfigUtils {
         return config;
     }
     
+    
+    /**
+     * Checks if the given world supports hats
+     * 
+     * @param world
+     * @return
+     */
+    public static boolean isHatWorld(World world) {
+        for (String s : UltimaHats.getPlugin().getConfig().getStringList("disabled-worlds")) {
+            if (world.getName().equals(s)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
     /**
      * Reloads all loaded configs, closing all GUIs
+     * and removing hats if they no longer exist or
+     * are no longer in a hat enabled world
      */
     public static void reloadConfigs() {
-        UltimaHats.getPlugin().reloadConfig();
-        UltimaHats.getPlugin().getInvs().stopAll();
+        UltimaHats plugin = UltimaHats.getPlugin();
+        plugin.reloadConfig();
+        plugin.getInvs().stopAll();
         configCache.clear();
+        
+        // Check for hat removals
+        FileConfiguration hatsConfig = getConfigFile("hats.yml");
+        WearerManager wm = plugin.getWearers();
+        for (Wearer w : wm.getWearers()) {
+            Player p = w.getPlayer();
+            if (!hatsConfig.contains(w.getHat()) || !isHatWorld(p.getWorld())) {
+                wm.removeWearer(w.getPlayer());
+            }
+        }
     }
 
     /**

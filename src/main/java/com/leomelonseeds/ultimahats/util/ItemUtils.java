@@ -12,14 +12,15 @@ import java.util.regex.Pattern;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.block.banner.PatternType;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.BannerMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
@@ -37,18 +38,25 @@ import me.clip.placeholderapi.PlaceholderAPI;
 public class ItemUtils {
     
     /**
-     * Applies the player's saved hat
+     * Applies the player's saved hat.
      * 
      * @param player
      */
-    public static void applyHat(Player player) {
+    public static boolean applyHat(Player player) {
+        if (!ConfigUtils.isHatWorld(player.getWorld())) {
+            return false;
+        }
+        
         String hat = UltimaHats.getPlugin().getSQL().getHat(player.getUniqueId());
         if (hat == null) {
-            return;
+            return false;
         }
         
         ConfigurationSection section = ConfigUtils.getConfigFile("hats.yml").getConfigurationSection(hat);
-        initializeHat(player, section);
+        if (section == null) {
+            return false;
+        }
+        return initializeHat(player, section);
     }
     
     /**
@@ -121,18 +129,44 @@ public class ItemUtils {
     }
     
     /**
-     * Removes player's currently equipped hat, if there is one
+     * Removes player's currently equipped hat, if there is one.
+     * Sets database hat to null regardless if a hat was removed.
+     * If a wearer was not found, attempt to remove any player head
+     * item that has hat metadata.
      * 
      * @param player
      * @return true if a hat was removed
      */
     public static boolean removeHat(Player player) {
+        UltimaHats.getPlugin().getSQL().savePlayerHat(player.getUniqueId(), null);
         WearerManager wm = UltimaHats.getPlugin().getWearers();
         if (!wm.isWearing(player)) {
-            return false;
+            PlayerInventory pinv = player.getInventory();
+            ItemStack helmet = player.getInventory().getItem(EquipmentSlot.HEAD);
+            if (helmet.getType() == Material.AIR) {
+                return false;
+            }
+            
+            ItemMeta hmeta = helmet.getItemMeta();
+            if (hmeta == null) {
+                return false;
+            }
+            
+            if (!hmeta.getPersistentDataContainer().has(UltimaHats.hatKey)) {
+                return false;
+            }
+
+            // After the above section succeeds the player must be wearing a hat
+            FileConfiguration hatsConfig = ConfigUtils.getConfigFile("hats.yml");
+            String hat = hmeta.getPersistentDataContainer().get(UltimaHats.hatKey, PersistentDataType.STRING);
+            if (hatsConfig.contains(hat)) {
+                return false;
+            }
+            
+            pinv.setHelmet(null);
+            return true;
         }
         wm.removeWearer(player);
-        UltimaHats.getPlugin().getSQL().savePlayerHat(player.getUniqueId(), null);
         return true;
     }
     
@@ -387,8 +421,7 @@ public class ItemUtils {
         }
         
         // Add persistent data for this item for GUI use
-        meta.getPersistentDataContainer().set(new NamespacedKey(UltimaHats.getPlugin(), "hat"),
-                PersistentDataType.STRING, guiHat);
+        meta.getPersistentDataContainer().set(UltimaHats.hatKey, PersistentDataType.STRING, guiHat);
         
         item.setItemMeta(meta);
         return item;

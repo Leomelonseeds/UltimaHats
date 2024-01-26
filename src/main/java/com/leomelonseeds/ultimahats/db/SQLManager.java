@@ -126,17 +126,15 @@ public class SQLManager {
      * @param uuid
      */
     public void savePlayerHat(UUID uuid, String hat) {
-        scheduler.runTaskAsynchronously(plugin, () -> {
-            try (Connection c = conn.getConnection(); PreparedStatement stmt = c.prepareStatement(
-                    "UPDATE ultimahats_players SET hat = ? WHERE uuid = ?;"
-            )) {
-                stmt.setString(1, hat);
-                stmt.setString(2, uuid.toString());
-                stmt.execute();
-            } catch (SQLException e) {
-                logger.log(Level.SEVERE, "Failed to set hat for " + Bukkit.getPlayer(uuid).getName());
-            }
-        });
+        try (Connection c = conn.getConnection(); PreparedStatement stmt = c.prepareStatement(
+                "UPDATE ultimahats_players SET hat = ? WHERE uuid = ?;"
+        )) {
+            stmt.setString(1, hat);
+            stmt.setString(2, uuid.toString());
+            stmt.execute();
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Failed to set hat for " + Bukkit.getPlayer(uuid).getName());
+        }
     }
     
     /**

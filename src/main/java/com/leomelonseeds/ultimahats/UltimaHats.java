@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -24,12 +25,15 @@ public class UltimaHats extends JavaPlugin {
     private WearerManager wearerManager;
     private Economy econ;
     
+    public static NamespacedKey hatKey;
+    
     @Override
     public void onEnable() {
         log("Enabling UltimaHats...");
         plugin = this;
         invs = new InventoryManager();
         wearerManager = new WearerManager();
+        hatKey = new NamespacedKey(plugin, "hat");
         Bukkit.getPluginManager().registerEvents(new JoinListener(this), this);
         Bukkit.getPluginManager().registerEvents(new InventoryListener(this), this);
         Bukkit.getPluginManager().registerEvents(new DeathListener(this), this);
@@ -80,7 +84,7 @@ public class UltimaHats extends JavaPlugin {
         log("Testing SQL connection...");
         if (!sqlManager.testConnection()) {
             log("The plugin cannot function without the database. Shutting down now...");
-            this.getPluginLoader().disablePlugin(this);
+            getServer().getPluginManager().disablePlugin(this);
         }
         log("SQL connection test complete.");
 

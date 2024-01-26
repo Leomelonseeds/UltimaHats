@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
-import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -110,12 +109,10 @@ public class HatsMenu implements HatInventory {
         
         // Get the config section of the clicked item
         ItemMeta meta = item.getItemMeta();
-        if (!meta.getPersistentDataContainer().has(new NamespacedKey(UltimaHats.getPlugin(), "hat"),
-                PersistentDataType.STRING)) {
+        if (!meta.getPersistentDataContainer().has(UltimaHats.hatKey, PersistentDataType.STRING)) {
             return;
         }
-        String clicked = meta.getPersistentDataContainer().get(new NamespacedKey(UltimaHats.getPlugin(), "hat"),
-                PersistentDataType.STRING);
+        String clicked = meta.getPersistentDataContainer().get(UltimaHats.hatKey, PersistentDataType.STRING);
         
         // Check page/unequip items
         if (clicked.equals("next-page")) {
@@ -145,55 +142,57 @@ public class HatsMenu implements HatInventory {
         
         // Check through hats to see if player clicked on a hat
         Set<String> hats = hatsConfig.getKeys(false);
-        if (hats.contains(clicked)) {
-            // Don't do anything if player has hat selected
-            String currentHat = plugin.getSQL().getHat(player.getUniqueId());
-            if (currentHat != null && currentHat.equals(clicked)) {
+        if (!hats.contains(clicked)) {
+            return;
+        }
+        
+        // Don't do anything if player has hat selected
+        String currentHat = plugin.getSQL().getHat(player.getUniqueId());
+        if (currentHat != null && currentHat.equals(clicked)) {
+            return;
+        }
+        
+        int requirementStatus = ItemUtils.meetsRequirements(player, hatsConfig.getConfigurationSection(clicked + ".requirements"));
+        
+        // Select hat if player owns it
+        if (requirementStatus == 1 || ItemUtils.purchasedHat(player, clicked)) {
+            if (ItemUtils.applyHat(player, clicked)) {
+                executeCommands(hatsConfig.getConfigurationSection(clicked));
+                updateInventory();
+            }
+            return;
+        }
+        
+        // Hat is buyable - fetch cost and make purchase
+        // At this point the plugin already knows an economy plugin exists
+        if (requirementStatus == 0) {
+            Economy econ = plugin.getEcon();
+            double cost = hatsConfig.getDouble(clicked + ".requirements.cost");
+            double bal = econ.getBalance(player);
+            if (bal < cost) {
+                player.sendMessage(ConfigUtils.getString("not-enough-money", player));
+                return;
+            } else {
+                new ConfirmAction("Purchase " + clicked + " for $" + cost, player, this, confirm -> {
+                    if (!confirm) {
+                        return;
+                    }
+                    econ.withdrawPlayer(player, cost);
+                    plugin.getSQL().saveNewHat(player.getUniqueId(), clicked);
+                    String purchase = ConfigUtils.getString("hat-purchased", player);
+                    purchase = purchase.replaceAll("%hat%", hatsConfig.getString(clicked + ".name"));
+                    purchase = purchase.replaceAll("%cost%", "" + hatsConfig.getDouble(clicked + ".requirements.cost"));
+                    player.sendMessage(ConfigUtils.toComponent(purchase));
+                });
+                updateInventory();
                 return;
             }
-            
-            int requirementStatus = ItemUtils.meetsRequirements(player, hatsConfig.getConfigurationSection(clicked + ".requirements"));
-            
-            // Select hat if player owns it
-            if (requirementStatus == 1 || ItemUtils.purchasedHat(player, clicked)) {
-                if (ItemUtils.applyHat(player, clicked)) {
-                    executeCommands(hatsConfig.getConfigurationSection(clicked));
-                    updateInventory();
-                }
-                return;
-            }
-            
-            // Hat is buyable - fetch cost and make purchase
-            // At this point the plugin already knows an economy plugin exists
-            if (requirementStatus == 0) {
-                Economy econ = plugin.getEcon();
-                double cost = hatsConfig.getDouble(clicked + ".requirements.cost");
-                double bal = econ.getBalance(player);
-                if (bal < cost) {
-                    player.sendMessage(ConfigUtils.getString("not-enough-money", player));
-                    return;
-                } else {
-                    new ConfirmAction("Purchase " + clicked + " for $" + cost, player, this, confirm -> {
-                        if (!confirm) {
-                            return;
-                        }
-                        econ.withdrawPlayer(player, cost);
-                        plugin.getSQL().saveNewHat(player.getUniqueId(), clicked);
-                        String purchase = ConfigUtils.getString("hat-purchased", player);
-                        purchase = purchase.replaceAll("%hat%", hatsConfig.getString(clicked + ".name"));
-                        purchase = purchase.replaceAll("%cost%", "" + hatsConfig.getDouble(clicked + ".requirements.cost"));
-                        player.sendMessage(ConfigUtils.toComponent(purchase));
-                    });
-                    updateInventory();
-                    return;
-                }
-            }
-            
-            // Player has not unlocked hat
-            if (requirementStatus == -1) {
-                player.sendMessage(ConfigUtils.getString("requirements-not-met", player));
-                return;
-            }
+        }
+        
+        // Player has not unlocked hat
+        if (requirementStatus == -1) {
+            player.sendMessage(ConfigUtils.getString("requirements-not-met", player));
+            return;
         }
     }
     

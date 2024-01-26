@@ -9,6 +9,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import com.leomelonseeds.ultimahats.UltimaHats;
+import com.leomelonseeds.ultimahats.util.ConfigUtils;
 import com.leomelonseeds.ultimahats.util.ItemUtils;
 
 public class JoinListener implements Listener {
@@ -24,14 +25,11 @@ public class JoinListener implements Listener {
         Player player = e.getPlayer();
         plugin.getSQL().createPlayer(player.getUniqueId(), result -> {});
         
-        // Don't enable on disabled worlds
-        if (!isHatWorld(player.getWorld())) {
-            ItemUtils.removeHat(player);
-            return;
-        }
-        
         // Apply player's saved hat, if there is one
-        ItemUtils.applyHat(player);
+        // If none was found, try removing existing hats instead
+        if (!ItemUtils.applyHat(player)) {
+            ItemUtils.removeHat(player);
+        }
         
         /* REMOVED TO PREVENT DATA WIPES FROM USER ERROR
         // Check player's owned hats and remove those that don't exist
@@ -66,25 +64,16 @@ public class JoinListener implements Listener {
         World to = player.getWorld();
         
         // Do nothing if both worlds are disabled or both are enabled
-        if (isHatWorld(from) == isHatWorld(to)) {
+        boolean isFrom = ConfigUtils.isHatWorld(from);
+        boolean isTo = ConfigUtils.isHatWorld(to);
+        if (isFrom == isTo) {
             return;
         }
         
-        if (!isHatWorld(to)) {
+        if (!isTo) {
             ItemUtils.removeHat(player);
         } else {
             ItemUtils.applyHat(player);
         }
     }
-    
-    // Checks if the player's world supports hats
-    private boolean isHatWorld(World world) {
-        for (String s : plugin.getConfig().getStringList("disabled-worlds")) {
-            if (world.getName().equals(s)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
 }

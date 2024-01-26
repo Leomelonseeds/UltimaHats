@@ -30,14 +30,16 @@ public class WearerManager {
      */
     public void removeWearer(Player player) {
         for (Wearer w : new HashSet<>(wearers)) {
-            if (w.getPlayer().equals(player)) {
-                if (w instanceof AnimatedWearer) {
-                    ((AnimatedWearer) w).cancel();
-                }
-                wearers.remove(w);
-                player.getInventory().setHelmet(null);
-                break;
+            if (!w.getPlayer().equals(player)) {
+                continue;
             }
+            
+            if (w instanceof AnimatedWearer) {
+                ((AnimatedWearer) w).cancel();
+            }
+            wearers.remove(w);
+            player.getInventory().setHelmet(null);
+            break;
         }
     }
     
